@@ -177,5 +177,30 @@
             observer.observe(el);
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9593765f64818949',t:'MTc1MTUxNTA4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    <div id="g_id_onload"
+         data-client_id="662702539784-01d43aftm8nfgevd4rn4gjagf3iqm3mh.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
+    <script>
+    function handleCredentialResponse(response) {
+      // response.credential คือ id_token
+      // ส่ง id_token ไป Apps Script API
+      fetch('https://script.google.com/macros/s/AKfycbyYyFF7e2LQ4pgfKJ6cu_PmNZ-rbScPLWHn3ISxHzKB8mI7PU5WB9YqGxUSLUoaTHbH/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_token: response.credential })
+      })
+      .then(res => res.json())
+      .then(data => {
+        // ตรวจสอบผลลัพธ์และ redirect หรือแสดง error
+        if (data.success) {
+          // login สำเร็จ
+        } else {
+          // login ไม่สำเร็จ
+        }
+      });
+    }
+    </script>
+</body>
 </html>

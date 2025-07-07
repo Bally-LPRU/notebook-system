@@ -7,6 +7,7 @@
     <meta name="description" content="เข้าสู่ระบบยืมคืนโน็คบุค">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Sarabun', sans-serif; }
@@ -109,6 +110,12 @@
             </div>
         </div>
     </div>
+
+    <div id="g_id_onload"
+         data-client_id="662702539784-01d43aftm8nfgevd4rn4gjagf3iqm3mh.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin" data-type="standard"></div>
 
     <script>
         // Configuration - เปลี่ยน URL นี้เป็น Google Apps Script URL ของคุณ
@@ -355,6 +362,22 @@
             } finally {
                 resendOtpBtn.disabled = false;
             }
+        }
+
+        function handleCredentialResponse(response) {
+            fetch('https://script.google.com/macros/s/AKfycbyYyFF7e2LQ4pgfKJ6cu_PmNZ-rbScPLWHn3ISxHzKB8mI7PU5WB9YqGxUSLUoaTHbH/exec', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_token: response.credential })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // login สำเร็จ
+                } else {
+                    // login ไม่สำเร็จ
+                }
+            });
         }
     </script>
 </body>
