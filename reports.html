@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงานและประวัติ - ระบบยืมคืนโน้ตบุ๊ก</title>
+    <meta name="description" content="หน้าจอสำหรับดูรายงานและประวัติการยืม-คืนอุปกรณ์">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    📊 รายงานและประวัติ
+                </h1>
+                <button onclick="window.location.href='profile.html'" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+                    กลับสู่โปรไฟล์
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- Status Messages -->
+        <div id="statusMessage" class="hidden mb-6 p-4 rounded-lg"></div>
+
+        <!-- Device Borrow History -->
+        <div class="bg-white rounded-xl shadow-xl p-8 mb-8 fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">ประวัติการยืม-คืนของอุปกรณ์</h2>
+            <div class="mb-4">
+                <label for="deviceSelect" class="block text-sm font-medium text-gray-700 mb-2">เลือกอุปกรณ์:</label>
+                <select id="deviceSelect" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                    <option value="">-- เลือกอุปกรณ์เพื่อดูประวัติ --</option>
+                </select>
+            </div>
+            <div id="deviceBorrowHistoryContainer" class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+                    <thead>
+                        <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="py-3 px-6 border-b">Record ID</th>
+                            <th class="py-3 px-6 border-b">User Name</th>
+                            <th class="py-3 px-6 border-b">Borrow Date</th>
+                            <th class="py-3 px-6 border-b">Due Date</th>
+                            <th class="py-3 px-6 border-b">Return Date</th>
+                            <th class="py-3 px-6 border-b">Status</th>
+                            <th class="py-3 px-6 border-b">Borrower Notes</th>
+                            <th class="py-3 px-6 border-b">Admin Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deviceBorrowHistoryTableBody">
+                        <!-- Device borrow history will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="noDeviceBorrowHistoryMessage" class="text-center text-gray-500 mt-4 hidden">ไม่พบประวัติการยืม-คืนสำหรับอุปกรณ์ที่เลือก</p>
+        </div>
+
+        <!-- Overdue Borrows Report -->
+        <div class="bg-white rounded-xl shadow-xl p-8 mb-8 fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">รายงานอุปกรณ์ที่เลยกำหนดคืน</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+                    <thead>
+                        <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="py-3 px-6 border-b">Record ID</th>
+                            <th class="py-3 px-6 border-b">Device Name</th>
+                            <th class="py-3 px-6 border-b">User Name</th>
+                            <th class="py-3 px-6 border-b">Borrow Date</th>
+                            <th class="py-3 px-6 border-b">Due Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overdueBorrowsTableBody">
+                        <!-- Overdue borrows will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="noOverdueBorrowsMessage" class="text-center text-gray-500 mt-4 hidden">ไม่มีอุปกรณ์ที่เลยกำหนดคืน</p>
+        </div>
+
+        <!-- Currently Borrowed Devices Report -->
+        <div class="bg-white rounded-xl shadow-xl p-8 mb-8 fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">รายงานอุปกรณ์ที่กำลังถูกยืมอยู่</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+                    <thead>
+                        <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="py-3 px-6 border-b">Record ID</th>
+                            <th class="py-3 px-6 border-b">Device Name</th>
+                            <th class="py-3 px-6 border-b">User Name</th>
+                            <th class="py-3 px-6 border-b">Borrow Date</th>
+                            <th class="py-3 px-6 border-b">Due Date</th>
+                            <th class="py-3 px-6 border-b">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currentlyBorrowedTableBody">
+                        <!-- Currently borrowed devices will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="noCurrentlyBorrowedMessage" class="text-center text-gray-500 mt-4 hidden">ไม่มีอุปกรณ์ที่กำลังถูกยืมอยู่</p>
+        </div>
+
+        <!-- Most Borrowed Devices Report -->
+        <div class="bg-white rounded-xl shadow-xl p-8 mb-8 fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">รายงานอุปกรณ์ที่ถูกยืมมากที่สุด</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+                    <thead>
+                        <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="py-3 px-6 border-b">Device ID</th>
+                            <th class="py-3 px-6 border-b">Device Name</th>
+                            <th class="py-3 px-6 border-b">Borrow Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mostBorrowedTableBody">
+                        <!-- Most borrowed devices will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="noMostBorrowedMessage" class="text-center text-gray-500 mt-4 hidden">ไม่พบข้อมูลอุปกรณ์ที่ถูกยืมมากที่สุด</p>
+        </div>
+
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYyFF7e2LQ4pgfKJ6cu_PmNZ-rbScPLWHn3ISxHzKB8mI7PU5WB9YqGxUSLUoaTHbH/exec';
+        let allDevices = []; // To store all devices for the dropdown
+
+        function showStatus(type, message) {
+            const statusMessageDiv = document.getElementById('statusMessage');
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            
+            if (type === 'success') {
+                statusMessageDiv.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                statusMessageDiv.classList.add('bg-red-100', 'text-red-800');
+            }
+            statusMessageDiv.classList.remove('hidden');
+            statusMessageDiv.classList.add('fade-in');
+
+            setTimeout(() => {
+                statusMessageDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('token');
+            const userData = localStorage.getItem('userData');
+
+            if (!token || !userData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            // Redirect if not admin
+            if (user.userStatus !== 'ผู้ดูแลระบบ') {
+                window.location.href = 'profile.html'; // Redirect non-admins
+                showStatus('error', 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+                return;
+            }
+
+            // Fetch all devices for the dropdown
+            await fetchAllDevices();
+
+            // Load reports
+            fetchOverdueBorrows();
+            fetchCurrentlyBorrowedDevices();
+            fetchMostBorrowedDevices();
+
+            // Event listener for device select dropdown
+            document.getElementById('deviceSelect').addEventListener('change', function() {
+                const deviceId = this.value;
+                if (deviceId) {
+                    fetchDeviceBorrowHistory(deviceId);
+                } else {
+                    document.getElementById('deviceBorrowHistoryTableBody').innerHTML = '';
+                    document.getElementById('noDeviceBorrowHistoryMessage').classList.remove('hidden');
+                }
+            });
+        });
+
+        async function fetchAllDevices() {
+            try {
+                const params = new URLSearchParams({
+                    action: 'readDevices',
+                    token: localStorage.getItem('token')
+                });
+
+                const response = await fetch(SCRIPT_URL + '?' + params.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    allDevices = result.data;
+                    populateDeviceSelect(result.data);
+                } else {
+                    showStatus('error', result.error || 'ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
+                }
+            } catch (error) {
+                console.error('Error fetching devices:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการดึงข้อมูลอุปกรณ์: ' + error.message);
+            }
+        }
+
+        function populateDeviceSelect(devices) {
+            const deviceSelect = document.getElementById('deviceSelect');
+            devices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.id;
+                option.textContent = `${device.deviceName} (${device.id})`;
+                deviceSelect.appendChild(option);
+            });
+        }
+
+        async function fetchDeviceBorrowHistory(deviceId) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'readBorrowRecords',
+                    deviceId: deviceId,
+                    token: localStorage.getItem('token')
+                });
+
+                const response = await fetch(SCRIPT_URL + '?' + params.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    renderDeviceBorrowHistoryTable(result.data);
+                } else {
+                    showStatus('error', result.error || 'ไม่สามารถดึงประวัติการยืม-คืนอุปกรณ์ได้');
+                }
+            } catch (error) {
+                console.error('Error fetching device borrow history:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการดึงประวัติการยืม-คืนอุปกรณ์: ' + error.message);
+            }
+        }
+
+        async function renderDeviceBorrowHistoryTable(records) {
+            const tableBody = document.getElementById('deviceBorrowHistoryTableBody');
+            const noHistoryMessage = document.getElementById('noDeviceBorrowHistoryMessage');
+            tableBody.innerHTML = '';
+
+            if (records && records.length > 0) {
+                noHistoryMessage.classList.add('hidden');
+                let tableRowsHtml = '';
+                for (const record of records) {
+                    const user = await fetchUserDetails(record.userId); // Fetch user details
+                    tableRowsHtml += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.recordId}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${user ? `${user.firstName} ${user.lastName}` : 'N/A'}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${new Date(record.borrowDate).toLocaleDateString()}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${new Date(record.dueDate).toLocaleDateString()}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.returnDate ? new Date(record.returnDate).toLocaleDateString() : '-'}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.borrowStatus}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.borrowerNotes || '-'}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.adminNotes || '-'}</td>
+                        </tr>
+                    `;
+                }
+                tableBody.innerHTML = tableRowsHtml;
+            } else {
+                noHistoryMessage.classList.remove('hidden');
+            }
+        }
+
+        async function fetchUserDetails(userId) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'readUsers',
+                    id: userId,
+                    token: localStorage.getItem('token')
+                });
+                const response = await fetch(SCRIPT_URL + '?' + params.toString());
+                const result = await response.json();
+                if (result.success) {
+                    return result.data;
+                }
+                return null;
+            } catch (error) {
+                console.error('Error fetching user details:', error);
+                return null;
+            }
+        }
+
+        async function fetchOverdueBorrows() {
+            try {
+                const params = new URLSearchParams({
+                    action: 'getOverdueBorrows',
+                    token: localStorage.getItem('token')
+                });
+
+                const response = await fetch(SCRIPT_URL + '?' + params.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    renderOverdueBorrowsTable(result.data);
+                } else {
+                    showStatus('error', result.error || 'ไม่สามารถดึงรายงานอุปกรณ์ที่เลยกำหนดคืนได้');
+                }
+            } catch (error) {
+                console.error('Error fetching overdue borrows:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการดึงรายงานอุปกรณ์ที่เลยกำหนดคืน: ' + error.message);
+            }
+        }
+
+        async function renderOverdueBorrowsTable(records) {
+            const tableBody = document.getElementById('overdueBorrowsTableBody');
+            const noRecordsMessage = document.getElementById('noOverdueBorrowsMessage');
+            tableBody.innerHTML = '';
+
+            if (records && records.length > 0) {
+                noRecordsMessage.classList.add('hidden');
+                let tableRowsHtml = '';
+                for (const record of records) {
+                    const device = allDevices.find(d => d.id === record.deviceId);
+                    const user = await fetchUserDetails(record.userId);
+                    tableRowsHtml += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.recordId}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${device ? device.deviceName : 'N/A'}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${user ? `${user.firstName} ${user.lastName}` : 'N/A'}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${new Date(record.borrowDate).toLocaleDateString()}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${new Date(record.dueDate).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                }
+                tableBody.innerHTML = tableRowsHtml;
+            } else {
+                noRecordsMessage.classList.remove('hidden');
+            }
+        }
+
+        async function fetchCurrentlyBorrowedDevices() {
+            try {
+                const params = new URLSearchParams({
+                    action: 'getCurrentlyBorrowedDevices',
+                    token: localStorage.getItem('token')
+                });
+
+                const response = await fetch(SCRIPT_URL + '?' + params.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    renderCurrentlyBorrowedTable(result.data);
+                } else {
+                    showStatus('error', result.error || 'ไม่สามารถดึงรายงานอุปกรณ์ที่กำลังถูกยืมอยู่ได้');
+                }
+            } catch (error) {
+                console.error('Error fetching currently borrowed devices:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการดึงรายงานอุปกรณ์ที่กำลังถูกยืมอยู่: ' + error.message);
+            }
+        }
+
+        async function renderCurrentlyBorrowedTable(records) {
+            const tableBody = document.getElementById('currentlyBorrowedTableBody');
+            const noRecordsMessage = document.getElementById('noCurrentlyBorrowedMessage');
+            tableBody.innerHTML = '';
+
+            if (records && records.length > 0) {
+                noRecordsMessage.classList.add('hidden');
+                let tableRowsHtml = '';
+                for (const record of records) {
+                    const device = allDevices.find(d => d.id === record.deviceId);
+                    const user = await fetchUserDetails(record.userId);
+                    tableRowsHtml += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.recordId}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${device ? device.deviceName : 'N/A'}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${user ? `${user.firstName} ${user.lastName}` : 'N/A'}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${new Date(record.borrowDate).toLocaleDateString()}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${new Date(record.dueDate).toLocaleDateString()}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.borrowStatus}</td>
+                        </tr>
+                    `;
+                }
+                tableBody.innerHTML = tableRowsHtml;
+            } else {
+                noRecordsMessage.classList.remove('hidden');
+            }
+        }
+
+        async function fetchMostBorrowedDevices() {
+            try {
+                const params = new URLSearchParams({
+                    action: 'getMostBorrowedDevices',
+                    token: localStorage.getItem('token')
+                });
+
+                const response = await fetch(SCRIPT_URL + '?' + params.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    renderMostBorrowedTable(result.data);
+                } else {
+                    showStatus('error', result.error || 'ไม่สามารถดึงรายงานอุปกรณ์ที่ถูกยืมมากที่สุดได้');
+                }
+            } catch (error) {
+                console.error('Error fetching most borrowed devices:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการดึงรายงานอุปกรณ์ที่ถูกยืมมากที่สุด: ' + error.message);
+            }
+        }
+
+        async function renderMostBorrowedTable(records) {
+            const tableBody = document.getElementById('mostBorrowedTableBody');
+            const noRecordsMessage = document.getElementById('noMostBorrowedMessage');
+            tableBody.innerHTML = '';
+
+            if (records && records.length > 0) {
+                noRecordsMessage.classList.add('hidden');
+                let tableRowsHtml = '';
+                for (const record of records) {
+                    const device = allDevices.find(d => d.id === record.deviceId);
+                    tableRowsHtml += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.deviceId}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${device ? device.deviceName : 'N/A'}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${record.borrowCount}</td>
+                        </tr>
+                    `;
+                }
+                tableBody.innerHTML = tableRowsHtml;
+            } else {
+                noRecordsMessage.classList.remove('hidden');
+            }
+        }
+
+    </script>
+</body>
+</html>

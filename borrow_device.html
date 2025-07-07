@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ยืมอุปกรณ์ - ระบบยืมคืนโน้ตบุ๊ก</title>
+    <meta name="description" content="หน้าจอสำหรับส่งคำขอการยืมอุปกรณ์">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    💻 ยืมอุปกรณ์
+                </h1>
+                <button onclick="window.location.href='profile.html'" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+                    กลับสู่โปรไฟล์
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- Status Messages -->
+        <div id="statusMessage" class="hidden mb-6 p-4 rounded-lg"></div>
+
+        <div class="bg-white rounded-xl shadow-xl p-8 mb-8 fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">รายการอุปกรณ์ที่พร้อมให้ยืม</h2>
+            <div id="deviceListContainer" class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+                    <thead>
+                        <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="py-3 px-6 border-b">Device ID</th>
+                            <th class="py-3 px-6 border-b">ชื่ออุปกรณ์</th>
+                            <th class="py-3 px-6 border-b">ประเภท</th>
+                            <th class="py-3 px-6 border-b">สถานะ</th>
+                            <th class="py-3 px-6 border-b">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="devicesTableBody">
+                        <!-- Device rows will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="noDevicesMessage" class="text-center text-gray-500 mt-4 hidden">ไม่พบอุปกรณ์ที่พร้อมให้ยืมในระบบ</p>
+        </div>
+
+        <!-- Borrow Request Form -->
+        <div id="borrowFormContainer" class="bg-white rounded-xl shadow-xl p-8 mb-8 hidden fade-in">
+            <h2 id="formTitle" class="text-2xl font-bold text-gray-800 mb-6">ส่งคำขอการยืมอุปกรณ์</h2>
+            <form id="borrowForm" class="space-y-6">
+                <input type="hidden" id="borrowDeviceId" name="deviceId">
+                
+                <div>
+                    <label for="deviceName" class="block text-sm font-medium text-gray-700 mb-2">อุปกรณ์ที่เลือก</label>
+                    <input type="text" id="deviceName" name="deviceName" readonly
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                </div>
+
+                <div>
+                    <label for="borrowDate" class="block text-sm font-medium text-gray-700 mb-2">วันที่ยืม *</label>
+                    <input type="date" id="borrowDate" name="borrowDate" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                </div>
+                <div>
+                    <label for="returnDate" class="block text-sm font-medium text-gray-700 mb-2">วันที่คืนโดยประมาณ *</label>
+                    <input type="date" id="returnDate" name="returnDate" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                </div>
+                <div>
+                    <label for="purpose" class="block text-sm font-medium text-gray-700 mb-2">วัตถุประสงค์การยืม *</label>
+                    <textarea id="purpose" name="purpose" rows="4" required
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"></textarea>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                    <button type="submit" id="submitBorrowBtn"
+                            class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-medium flex items-center justify-center">
+                        <span id="submitBorrowText">ส่งคำขอ</span>
+                        <div id="submitBorrowSpinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+                    <button type="button" onclick="cancelBorrowRequest()"
+                            class="flex-1 bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-200 font-medium">
+                        ยกเลิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYyFF7e2LQ4pgfKJ6cu_PmNZ-rbScPLWHn3ISxHzKB8mI7PU5WB9YqGxUSLUoaTHbH/exec';
+
+        let allAvailableDevices = [];
+        let token = null;
+        let userData = null;
+
+        function showStatus(type, message) {
+            const statusMessageDiv = document.getElementById('statusMessage');
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            
+            if (type === 'success') {
+                statusMessageDiv.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                statusMessageDiv.classList.add('bg-red-100', 'text-red-800');
+            }
+            statusMessageDiv.classList.remove('hidden');
+            statusMessageDiv.classList.add('fade-in');
+
+            setTimeout(() => {
+                statusMessageDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            token = localStorage.getItem('token');
+            userData = localStorage.getItem('userData');
+
+            if (!token || !userData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Fetch and display available devices
+            fetchAvailableDevices();
+
+            // Form submission for borrow request
+            document.getElementById('borrowForm').addEventListener('submit', handleBorrowFormSubmit);
+        });
+
+        async function fetchAvailableDevices() {
+            try {
+                const params = new URLSearchParams({
+                    action: 'readAvailableDevices', // This action needs to be implemented in Apps Script
+                    token: token
+                });
+
+                const response = await fetch(SCRIPT_URL + '?' + params.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log('Available Devices:', result.data);
+                    allAvailableDevices = result.data;
+                    renderDevicesTable(result.data);
+                } else {
+                    showStatus('error', result.error || 'ไม่สามารถดึงข้อมูลอุปกรณ์ที่พร้อมให้ยืมได้');
+                }
+            } catch (error) {
+                console.error('Error fetching available devices:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการดึงข้อมูลอุปกรณ์: ' + error.message);
+            }
+        }
+
+        function renderDevicesTable(devices) {
+            const devicesTableBody = document.getElementById('devicesTableBody');
+            const noDevicesMessage = document.getElementById('noDevicesMessage');
+            devicesTableBody.innerHTML = ''; 
+
+            if (devices && devices.length > 0) {
+                noDevicesMessage.classList.add('hidden');
+                let tableRowsHtml = '';
+                devices.forEach(device => {
+                    tableRowsHtml += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.id}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.name}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.type}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.status}</td>
+                            <td class="py-3 px-6 border-b border-gray-200 text-sm">
+                                <button onclick="showBorrowForm('${device.id}')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+                                    ยืม
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                devicesTableBody.innerHTML = tableRowsHtml;
+            } else {
+                noDevicesMessage.classList.remove('hidden');
+            }
+        }
+
+        function showBorrowForm(deviceId) {
+            const device = allAvailableDevices.find(d => d.id === deviceId);
+            if (device) {
+                document.getElementById('borrowDeviceId').value = device.id;
+                document.getElementById('deviceName').value = device.name;
+                document.getElementById('borrowDate').valueAsDate = new Date(); // Set default borrow date to today
+                document.getElementById('returnDate').value = ''; // Clear return date
+                document.getElementById('purpose').value = ''; // Clear purpose
+
+                document.getElementById('borrowFormContainer').classList.remove('hidden');
+                window.scrollTo(0, document.body.scrollHeight);
+            } else {
+                showStatus('error', 'ไม่พบอุปกรณ์ที่ต้องการยืม');
+            }
+        }
+
+        async function handleBorrowFormSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const borrowData = {};
+            for (let [key, value] of formData.entries()) {
+                borrowData[key] = value;
+            }
+
+            // Add userId from localStorage
+            const user = JSON.parse(userData);
+            borrowData.userId = user.id;
+
+            const submitBtn = document.getElementById('submitBorrowBtn');
+            const submitText = document.getElementById('submitBorrowText');
+            const submitSpinner = document.getElementById('submitBorrowSpinner');
+            
+            submitBtn.disabled = true;
+            submitText.textContent = 'กำลังส่งคำขอ...';
+            submitSpinner.classList.remove('hidden');
+            showStatus('', ''); // Clear previous messages
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'createBorrowRequest', // This action needs to be implemented in Apps Script
+                    borrowData: JSON.stringify(borrowData),
+                    token: token
+                });
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: params,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('success', result.message || 'ส่งคำขอการยืมสำเร็จ! รอผู้ดูแลระบบอนุมัติ');
+                    document.getElementById('borrowFormContainer').classList.add('hidden');
+                    form.reset();
+                    fetchAvailableDevices(); // Refresh the list
+                } else {
+                    throw new Error(result.error || 'เกิดข้อผิดพลาดในการส่งคำขอการยืม');
+                }
+            } catch (error) {
+                console.error('Error submitting borrow request:', error);
+                showStatus('error', 'เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitText.textContent = 'ส่งคำขอ';
+                submitSpinner.classList.add('hidden');
+            }
+        }
+
+        function cancelBorrowRequest() {
+            document.getElementById('borrowForm').reset();
+            document.getElementById('borrowFormContainer').classList.add('hidden');
+        }
+    </script>
+</body>
+</html> 

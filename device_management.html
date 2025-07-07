@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการอุปกรณ์ - ระบบยืมคืนโน้ตบุ๊ก</title>
+    <meta name="description" content="หน้าจอสำหรับจัดการข้อมูลอุปกรณ์โน้ตบุ๊ก">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <div class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    💻 จัดการอุปกรณ์
+                </h1>
+                <button onclick="window.location.href='profile.html'" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+                    กลับสู่โปรไฟล์
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Status Messages -->
+        <div id="statusMessage" class="hidden mb-6 p-4 rounded-lg"></div>
+
+        <div class="bg-white rounded-xl shadow-xl p-8 mb-8 fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">รายการอุปกรณ์</h2>
+            <div class="mb-4 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <div class="flex-grow w-full sm:w-auto">
+                    <input type="text" id="searchInput" placeholder="ค้นหาด้วยชื่ออุปกรณ์, S/N..."
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                </div>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                    <select id="typeFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                        <option value="">-- กรองด้วยประเภท --</option>
+                        <option value="Notebook">Notebook</option>
+                        <option value="Tablet">Tablet</option>
+                        <option value="Projector">Projector</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                        <option value="">-- กรองด้วยสถานะ --</option>
+                        <option value="Available">Available</option>
+                        <option value="Borrowed">Borrowed</option>
+                        <option value="Under Maintenance">Under Maintenance</option>
+                        <option value="Lost">Lost</option>
+                    </select>
+                </div>
+                <div class="mb-4 text-right flex justify-end space-x-4">
+                    <button onclick="showAddDeviceForm()"
+                            class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200 font-medium">
+                        + เพิ่มอุปกรณ์ใหม่
+                    </button>
+                    <a href="borrow_record_management.html"
+                       class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-200 font-medium flex items-center justify-center">
+                        <span class="mr-2">📝</span>จัดการการยืม-คืน
+                    </a>
+                    <a href="reports.html"
+                       class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition duration-200 font-medium flex items-center justify-center">
+                        <span class="mr-2">📊</span>รายงาน
+                    </a>
+                </div>
+            </div>
+            <div id="deviceListContainer" class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+                    <thead>
+                        <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="deviceId">Device ID <span class="sort-icon" data-sort-key="deviceId"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="deviceName">Device Name <span class="sort-icon" data-sort-key="deviceName"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="serialNumber">Serial Number <span class="sort-icon" data-sort-key="serialNumber"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="type">Type <span class="sort-icon" data-sort-key="type"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="model">Model <span class="sort-icon" data-sort-key="model"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="status">Status <span class="sort-icon" data-sort-key="status"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="condition">Condition <span class="sort-icon" data-sort-key="condition"></span></th>
+                            <th class="py-3 px-6 border-b">Notes</th>
+                            <th class="py-3 px-6 border-b action-header">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="devicesTableBody">
+                        <!-- Device rows will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-between items-center mt-4">
+                <div>
+                    <span id="paginationSummary" class="text-sm text-gray-700"></span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="prevPageBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded-lg text-sm">ก่อนหน้า</button>
+                    <span id="pageNumbers" class="text-sm text-gray-700"></span>
+                    <button id="nextPageBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded-lg text-sm">ถัดไป</button>
+                    <select id="rowsPerPageSelect" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                        <option value="10">10 / หน้า</option>
+                        <option value="25">25 / หน้า</option>
+                        <option value="50">50 / หน้า</option>
+                    </select>
+                </div>
+            </div>
+            <p id="noDevicesMessage" class="text-center text-gray-500 mt-4 hidden">ไม่พบอุปกรณ์ในระบบ</p>
+        </div>
+
+        <!-- Add/Edit Device Form -->
+        <div id="deviceFormContainer" class="bg-white rounded-xl shadow-xl p-8 mb-8 hidden fade-in">
+            <h2 id="formTitle" class="text-2xl font-bold text-gray-800 mb-6">เพิ่มอุปกรณ์ใหม่</h2>
+            <form id="deviceForm" class="space-y-6">
+                <!-- Hidden input for Device ID (for updates) -->
+                <input type="hidden" id="deviceId" name="deviceId">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="deviceName" class="block text-sm font-medium text-gray-700 mb-2">ชื่ออุปกรณ์ *</label>
+                        <input type="text" id="deviceName" name="deviceName" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                    </div>
+                    <div>
+                        <label for="serialNumber" class="block text-sm font-medium text-gray-700 mb-2">หมายเลขซีเรียล *</label>
+                        <input type="text" id="serialNumber" name="serialNumber" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                    </div>
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-2">ประเภท *</label>
+                        <select id="type" name="type" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                            <option value="">เลือกประเภท</option>
+                            <option value="Notebook">Notebook</option>
+                            <option value="Tablet">Tablet</option>
+                            <option value="Projector">Projector</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="model" class="block text-sm font-medium text-gray-700 mb-2">รุ่น *</label>
+                        <input type="text" id="model" name="model" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                    </div>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">สถานะ *</label>
+                        <select id="status" name="status" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                            <option value="">เลือกสถานะ</option>
+                            <option value="Available">Available</option>
+                            <option value="Borrowed">Borrowed</option>
+                            <option value="Under Maintenance">Under Maintenance</option>
+                            <option value="Lost">Lost</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="condition" class="block text-sm font-medium text-gray-700 mb-2">สภาพ *</label>
+                        <select id="condition" name="condition" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                            <option value="">เลือกสภาพ</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Good">Good</option>
+                            <option value="Fair">Fair</option>
+                            <option value="Poor">Poor</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</label>
+                        <textarea id="notes" name="notes" rows="3"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                    <button type="submit" id="saveDeviceBtn"
+                            class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-medium flex items-center justify-center">
+                        <span id="saveDeviceText">บันทึกอุปกรณ์</span>
+                        <div id="saveDeviceSpinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+                    <button type="button" onclick="cancelDeviceEdit()"
+                            class="flex-1 bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-200 font-medium">
+                        ยกเลิก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYyFF7e2LQ4pgfKJ6cu_PmNZ-rbScPLWHn3ISxHzKB8mI7PU5WB9YqGxUSLUoaTHbH/exec';
+
+        let currentEditingDeviceId = null; // To keep track of the device being edited
+        let allDevices = []; // Store all fetched devices
+
+        // Pagination, Sorting, and Filtering state
+        let currentPage = 1;
+        let rowsPerPage = 10; // Default rows per page
+        let currentSortColumn = 'deviceName'; // Default sort column
+        let currentSortDirection = 'asc'; // Default sort direction
+        let filteredAndSortedDevices = []; // Devices after applying filters and sort
+
+        let token = null;
+        let userData = null;
+        let currentUserStatus = null; // New variable to store user's status
+
+        document.addEventListener('DOMContentLoaded', function() {
+            token = localStorage.getItem('token');
+            userData = localStorage.getItem('userData');
+
+            if (!token || !userData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            currentUserStatus = user.userStatus; // Set currentUserStatus
+
+            // Redirect if not admin (basic check, more robust check on backend)
+            if (currentUserStatus !== 'ผู้ดูแลระบบ') {
+                window.location.href = 'profile.html'; // Redirect non-admins
+                return;
+            }
+
+            // Update UI based on permissions
+            updateUIBasedOnPermissions();
+
+            // Fetch and display devices
+            fetchDevices();
+
+            // Event listeners for search, filter, pagination
+            document.getElementById('searchInput').addEventListener('input', applyFiltersAndPagination);
+            document.getElementById('typeFilter').addEventListener('change', applyFiltersAndPagination);
+            document.getElementById('statusFilter').addEventListener('change', applyFiltersAndPagination);
+            document.getElementById('prevPageBtn').addEventListener('click', () => changePage(-1));
+            document.getElementById('nextPageBtn').addEventListener('click', () => changePage(1));
+            document.getElementById('rowsPerPageSelect').addEventListener('change', (e) => {
+                rowsPerPage = parseInt(e.target.value);
+                currentPage = 1; // Reset to first page when rows per page changes
+                applyFiltersAndPagination();
+            });
+
+            // Event listeners for sorting
+            document.querySelectorAll('th[data-sort-by]').forEach(header => {
+                header.addEventListener('click', () => {
+                    const sortBy = header.getAttribute('data-sort-by');
+                    toggleSort(sortBy);
+                });
+            });
+
+            // Form submission for add/edit device
+            document.getElementById('deviceForm').addEventListener('submit', handleDeviceFormSubmit);
+        });
+
+        async function fetchDevices() {
+            try {
+                const params = new URLSearchParams({
+                    action: 'readDevices',
+                    token: token
+                });
+
+                const response = await fetch(SCRIPT_URL + '?' + params.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    allDevices = result.data; // Store fetched devices globally
+                    applyFiltersAndSort(); // Apply filters and sort after fetching
+                } else {
+                    showStatus('error', result.error || 'ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
+                }
+            } catch (error) {
+                console.error('Error fetching devices:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการดึงข้อมูลอุปกรณ์: ' + error.message);
+            }
+        }
+
+        function applyFiltersAndSort() {
+            let tempDevices = [...allDevices];
+
+            // 1. Apply Search Filter
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                tempDevices = tempDevices.filter(device => 
+                    (device.deviceName && device.deviceName.toLowerCase().includes(searchTerm)) ||
+                    (device.serialNumber && device.serialNumber.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            // 2. Apply Type Filter
+            const typeFilter = document.getElementById('typeFilter').value;
+            if (typeFilter) {
+                tempDevices = tempDevices.filter(device => device.type === typeFilter);
+            }
+
+            // 3. Apply Status Filter
+            const statusFilter = document.getElementById('statusFilter').value;
+            if (statusFilter) {
+                tempDevices = tempDevices.filter(device => device.status === statusFilter);
+            }
+
+            // 4. Apply Sorting
+            if (currentSortColumn) {
+                tempDevices.sort((a, b) => {
+                    const aValue = a[currentSortColumn];
+                    const bValue = b[currentSortColumn];
+
+                    if (aValue === undefined || bValue === undefined) return 0;
+
+                    if (typeof aValue === 'string' && typeof bValue === 'string') {
+                        return currentSortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+                    } else {
+                        return currentSortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+                    }
+                });
+            }
+
+            filteredAndSortedDevices = tempDevices;
+            currentPage = 1; // Reset to first page after applying filters/sort
+            renderDevicesTable();
+        }
+
+        function toggleSort(column) {
+            if (currentSortColumn === column) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                currentSortDirection = 'asc'; // Default to ascending when changing column
+            }
+            updateSortIcons();
+            applyFiltersAndSort();
+        }
+
+        function updateSortIcons() {
+            document.querySelectorAll('.sort-icon').forEach(icon => {
+                icon.textContent = ''; // Clear all icons
+            });
+            if (currentSortColumn) {
+                const currentIcon = document.querySelector(`[data-sort-key="${currentSortColumn}"]`);
+                if (currentIcon) {
+                    currentIcon.textContent = currentSortDirection === 'asc' ? ' ▲' : ' ▼';
+                }
+            }
+        }
+
+        function renderDevicesTable() {
+            const devicesTableBody = document.getElementById('devicesTableBody');
+            const noDevicesMessage = document.getElementById('noDevicesMessage');
+            const paginationSummary = document.getElementById('paginationSummary');
+            const pageNumbersContainer = document.getElementById('pageNumbers');
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+
+            devicesTableBody.innerHTML = ''; // Clear existing rows
+
+            if (!filteredAndSortedDevices || filteredAndSortedDevices.length === 0) {
+                noDevicesMessage.classList.remove('hidden');
+                paginationSummary.textContent = 'ไม่พบรายการ';
+                pageNumbersContainer.textContent = '';
+                prevPageBtn.disabled = true;
+                nextPageBtn.disabled = true;
+                return;
+            } else {
+                noDevicesMessage.classList.add('hidden');
+            }
+
+            // Calculate pagination values
+            const totalPages = Math.ceil(filteredAndSortedDevices.length / rowsPerPage);
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, filteredAndSortedDevices.length);
+            const devicesToDisplay = filteredAndSortedDevices.slice(startIndex, endIndex);
+
+            let tableRowsHtml = ''; 
+            devicesToDisplay.forEach(device => {
+                tableRowsHtml += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.deviceId}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.deviceName}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.serialNumber}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.type}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.model}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.status}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.condition}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.notes || '-'}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">
+                            <button onclick="editDevice('${device.deviceId}')" class="text-blue-600 hover:text-blue-800 font-medium mr-2">แก้ไข</button>
+                            <button onclick="deleteDevice('${device.deviceId}')" class="text-red-600 hover:text-red-800 font-medium">ลบ</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            devicesTableBody.innerHTML = tableRowsHtml; // Set innerHTML once
+
+            // Update pagination summary
+            paginationSummary.textContent = `แสดง ${startIndex + 1}-${endIndex} จาก ${filteredAndSortedDevices.length} รายการ`;
+
+            // Update page numbers
+            pageNumbersContainer.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const pageSpan = document.createElement('span');
+                pageSpan.textContent = i;
+                pageSpan.classList.add('px-2', 'py-1', 'rounded-lg', 'cursor-pointer', 'text-sm');
+                if (i === currentPage) {
+                    pageSpan.classList.add('bg-blue-500', 'text-white');
+                } else {
+                    pageSpan.classList.add('hover:bg-gray-200');
+                }
+                pageSpan.addEventListener('click', () => goToPage(i));
+                pageNumbersContainer.appendChild(pageSpan);
+            }
+
+            // Enable/disable pagination buttons
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            renderDevicesTable();
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderDevicesTable();
+        }
+
+        function showAddDeviceForm() {
+            document.getElementById('deviceFormContainer').classList.remove('hidden');
+            document.getElementById('formTitle').textContent = 'เพิ่มอุปกรณ์ใหม่';
+            currentEditingDeviceId = null;
+            resetDeviceForm();
+            window.scrollTo(0, document.body.scrollHeight); // Scroll to the bottom
+        }
+
+        async function editDevice(deviceId) {
+            showStatus('info', `กำลังโหลดข้อมูลอุปกรณ์: ${deviceId}`);
+            
+            const device = allDevices.find(d => d.deviceId === deviceId);
+
+            if (device) {
+                currentEditingDeviceId = device.deviceId;
+                document.getElementById('formTitle').textContent = `แก้ไขอุปกรณ์: ${device.deviceName}`;
+                document.getElementById('deviceId').value = device.deviceId;
+                document.getElementById('deviceName').value = device.deviceName;
+                document.getElementById('serialNumber').value = device.serialNumber;
+                document.getElementById('type').value = device.type;
+                document.getElementById('model').value = device.model;
+                document.getElementById('status').value = device.status;
+                document.getElementById('condition').value = device.condition;
+                document.getElementById('notes').value = device.notes;
+                
+                document.getElementById('deviceFormContainer').classList.remove('hidden');
+                showStatus('success', 'โหลดข้อมูลอุปกรณ์สำเร็จ');
+                window.scrollTo(0, document.body.scrollHeight); // Scroll to the bottom
+            } else {
+                showStatus('error', 'ไม่พบข้อมูลอุปกรณ์ที่ต้องการแก้ไขในข้อมูลที่โหลดมา');
+                console.error('Device not found in fetched data:', deviceId);
+            }
+        }
+
+        async function handleDeviceFormSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const deviceData = {};
+            for (let [key, value] of formData.entries()) {
+                deviceData[key] = value;
+            }
+
+            const saveBtn = document.getElementById('saveDeviceBtn');
+            const saveText = document.getElementById('saveDeviceText');
+            const saveSpinner = document.getElementById('saveDeviceSpinner');
+            
+            saveBtn.disabled = true;
+            saveText.textContent = 'กำลังบันทึก...';
+            saveSpinner.classList.remove('hidden');
+            showStatus('', ''); // Clear previous messages
+
+            try {
+                let action = 'createDevice';
+                let params = new URLSearchParams({
+                    action: action,
+                    deviceData: JSON.stringify(deviceData),
+                    token: token
+                });
+
+                if (currentEditingDeviceId) {
+                    action = 'updateDevice';
+                    params = new URLSearchParams({
+                        action: action,
+                        deviceId: currentEditingDeviceId,
+                        updatedData: JSON.stringify(deviceData),
+                        token: token
+                    });
+                }
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: params,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('success', result.message || (currentEditingDeviceId ? 'อัปเดตข้อมูลอุปกรณ์สำเร็จ!' : 'เพิ่มอุปกรณ์ใหม่สำเร็จ!'));
+                    resetDeviceForm();
+                    document.getElementById('deviceFormContainer').classList.add('hidden');
+                    fetchDevices(); // Re-fetch and re-render the list with filters/sort/pagination
+                } else {
+                    throw new Error(result.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูลอุปกรณ์');
+                }
+            } catch (error) {
+                console.error('Error saving device:', error);
+                showStatus('error', 'เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveText.textContent = currentEditingDeviceId ? 'บันทึกการเปลี่ยนแปลง' : 'บันทึกอุปกรณ์';
+                saveSpinner.classList.add('hidden');
+            }
+        }
+
+        function resetDeviceForm() {
+            document.getElementById('deviceForm').reset();
+            document.getElementById('deviceId').value = ''; // Clear hidden ID
+            currentEditingDeviceId = null;
+            document.getElementById('formTitle').textContent = 'เพิ่มอุปกรณ์ใหม่';
+        }
+
+        function cancelDeviceEdit() {
+            resetDeviceForm();
+            document.getElementById('deviceFormContainer').classList.add('hidden');
+        }
+
+        async function deleteDevice(deviceId) {
+            if (!confirm(`คุณแน่ใจหรือไม่ที่ต้องการลบอุปกรณ์ ID: ${deviceId}?`)) {
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'deleteDevice',
+                    deviceId: deviceId,
+                    token: token
+                });
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: params,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('success', result.message || 'ลบอุปกรณ์สำเร็จแล้ว!');
+                    fetchDevices(); // Re-fetch and re-render the list with filters/sort/pagination
+                } else {
+                    showStatus('error', result.error || 'เกิดข้อผิดพลาดในการลบอุปกรณ์');
+                }
+            } catch (error) {
+                console.error('Error deleting device:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการลบอุปกรณ์: ' + error.message);
+            }
+        }
+
+        function showStatus(type, message) {
+            const statusMessageDiv = document.getElementById('statusMessage');
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
+            
+            if (type === 'success') {
+                statusMessageDiv.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                statusMessageDiv.classList.add('bg-red-100', 'text-red-800');
+            } else if (type === 'info') {
+                statusMessageDiv.classList.add('bg-yellow-100', 'text-yellow-800');
+            }
+            statusMessageDiv.classList.remove('hidden');
+            statusMessageDiv.classList.add('fade-in');
+
+            setTimeout(() => {
+                statusMessageDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        function updateUIBasedOnPermissions() {
+            const addDeviceButton = document.querySelector('button[onclick="showAddDeviceForm()"]');
+            const manageBorrowRecordsLink = document.querySelector('a[href="borrow_record_management.html"]');
+            const reportsLink = document.querySelector('a[href="reports.html"]');
+            const actionHeader = document.querySelector('th.action-header');
+
+            if (currentUserStatus === 'ผู้ดูแลระบบ') {
+                addDeviceButton.classList.remove('hidden');
+                manageBorrowRecordsLink.classList.remove('hidden');
+                reportsLink.classList.remove('hidden');
+                if (actionHeader) actionHeader.classList.remove('hidden');
+            } else {
+                addDeviceButton.classList.add('hidden');
+                manageBorrowRecordsLink.classList.add('hidden');
+                reportsLink.classList.add('hidden');
+                if (actionHeader) actionHeader.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html> 

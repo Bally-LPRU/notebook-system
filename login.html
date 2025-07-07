@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - ระบบยืมคืนโน็คบุค</title>
+    <meta name="description" content="เข้าสู่ระบบยืมคืนโน็คบุค">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
+    <div class="container mx-auto px-4 max-w-md">
+        <!-- Back to Home -->
+        <div class="text-center mb-4">
+            <a href="index.html" class="text-blue-600 hover:text-blue-700 text-sm">← กลับหน้าแรก</a>
+        </div>
+
+        <!-- Login Form -->
+        <div class="bg-white rounded-xl shadow-2xl p-8 fade-in">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="bg-blue-500 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl">📚</span>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">เข้าสู่ระบบ</h1>
+                <p class="text-gray-600 mt-2">ระบบยืมคืนโน็คบุค</p>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="statusMessage" class="hidden mb-6 p-4 rounded-lg"></div>
+
+            <!-- Login Form -->
+            <div id="loginFormContainer">
+                <form id="loginForm" class="space-y-6">
+                    <!-- อีเมล -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">อีเมล *</label>
+                        <input type="email" id="email" name="email" required
+                               placeholder="example@email.com"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                    </div>
+
+                    <!-- เบอร์โทร -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">เบอร์โทร *</label>
+                        <input type="text" id="phone" name="phone" required
+                               placeholder="0898555668"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit" id="loginBtn"
+                            class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-medium flex items-center justify-center">
+                        <span id="loginText">เข้าสู่ระบบ</span>
+                        <div id="loginSpinner" class="loading-spinner ml-2 hidden"></div>
+                    </button>
+                </form>
+            </div>
+
+            <!-- OTP Verification Form (hidden by default) -->
+            <div id="otpVerificationContainer" class="hidden space-y-6">
+                <p class="text-center text-gray-700 mb-4">เราได้ส่งรหัส OTP ไปยังอีเมลของคุณแล้ว กรุณากรอกรหัสเพื่อยืนยัน</p>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">รหัส OTP *</label>
+                    <input type="text" id="otpInput" required
+                           placeholder="กรอกรหัส OTP 6 หลัก"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                </div>
+                <button type="button" id="verifyOtpBtn"
+                        class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-medium flex items-center justify-center">
+                    <span id="verifyOtpText">ยืนยันรหัส OTP</span>
+                    <div id="verifyOtpSpinner" class="loading-spinner ml-2 hidden"></div>
+                </button>
+                <div class="text-center mt-4">
+                    <p class="text-gray-600">ไม่ได้รับรหัส?</p>
+                    <button type="button" id="resendOtpBtn" class="text-blue-600 hover:text-blue-700 font-medium mt-2">
+                        ส่งรหัส OTP ใหม่
+                    </button>
+                </div>
+            </div>
+
+            <!-- Register Link -->
+            <div class="text-center mt-6">
+                <p class="text-gray-600">ยังไม่มีบัญชี?</p>
+                <a href="register.html" class="text-blue-600 hover:text-blue-700 font-medium">ลงทะเบียนที่นี่</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - เปลี่ยน URL นี้เป็น Google Apps Script URL ของคุณ
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYyFF7e2LQ4pgfKJ6cu_PmNZ-rbScPLWHn3ISxHzKB8mI7PU5WB9YqGxUSLUoaTHbH/exec';
+
+        let loginData = {}; // Global variable to store login form data temporarily
+
+        // Function to display status messages
+        function showStatus(type, message) {
+            const statusMessageDiv = document.getElementById('statusMessage');
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            
+            if (type === 'success') {
+                statusMessageDiv.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                statusMessageDiv.classList.add('bg-red-100', 'text-red-800');
+            }
+            statusMessageDiv.classList.remove('hidden');
+            statusMessageDiv.classList.add('fade-in');
+
+            // Optionally hide message after a few seconds
+            setTimeout(() => {
+                statusMessageDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                window.location.href = 'profile.html';
+                return;
+            }
+
+            // Form submission for login
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            // Form submission for OTP verification
+            document.getElementById('verifyOtpBtn').addEventListener('click', handleOtpVerification);
+            // Resend OTP button
+            document.getElementById('resendOtpBtn').addEventListener('click', resendOtp);
+        });
+
+        // Handle login (Send OTP)
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            
+            // Show loading state
+            loginBtn.disabled = true;
+            loginText.textContent = 'กำลังส่ง OTP...';
+            loginSpinner.classList.remove('hidden');
+            showStatus('' , ''); // Clear previous messages
+            
+            try {
+                const formData = new FormData(e.target);
+                const email = formData.get('email');
+                const phone = formData.get('phone');
+
+                if (!email || !phone) {
+                    throw new Error('กรุณากรอกอีเมลและเบอร์โทรให้ครบถ้วน');
+                }
+
+                // Store login data globally
+                loginData = { email, phone };
+
+                // Send OTP request
+                const params = new URLSearchParams({
+                    action: 'sendOtp',
+                    email: email // Send OTP to this email
+                });
+                
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: params,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+                
+                let result;
+                try {
+                    const text = await response.text();
+                    result = JSON.parse(text);
+                } catch (parseError) {
+                    throw new Error('ไม่สามารถประมวลผลข้อมูลจากเซิร์ฟเวอร์ได้ (ส่ง OTP)');
+                }
+                
+                if (result.success) {
+                    showStatus('success', result.message || 'ส่งรหัส OTP สำเร็จ! กรุณาตรวจสอบอีเมลของคุณ');
+                    document.getElementById('loginFormContainer').classList.add('hidden');
+                    document.getElementById('otpVerificationContainer').classList.remove('hidden');
+                    document.getElementById('otpInput').focus();
+                    
+                } else {
+                    throw new Error(result.error || 'เกิดข้อผิดพลาดในการส่ง OTP');
+                }
+                
+            } catch (error) {
+                console.error('Login (OTP Send) error:', error);
+                showStatus('error', 'เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                // Reset button state
+                loginBtn.disabled = false;
+                loginText.textContent = 'เข้าสู่ระบบ';
+                loginSpinner.classList.add('hidden');
+            }
+        }
+
+        // Handle OTP verification and final login
+        async function handleOtpVerification() {
+            const otpInput = document.getElementById('otpInput');
+            const otp = otpInput.value.trim();
+            const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+            const verifyOtpText = document.getElementById('verifyOtpText');
+            const verifyOtpSpinner = document.getElementById('verifyOtpSpinner');
+
+            if (!otp) {
+                showStatus('error', 'กรุณากรอกรหัส OTP');
+                return;
+            }
+
+            // Show loading state
+            verifyOtpBtn.disabled = true;
+            verifyOtpText.textContent = 'กำลังยืนยัน...';
+            verifyOtpSpinner.classList.remove('hidden');
+            showStatus('' , ''); // Clear previous messages
+
+            try {
+                // Verify OTP first
+                const verifyParams = new URLSearchParams({
+                    action: 'verifyOtp',
+                    email: loginData.email,
+                    otp: otp
+                });
+
+                const verifyResponse = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: verifyParams,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                let verifyResult;
+                try {
+                    const text = await verifyResponse.text();
+                    verifyResult = JSON.parse(text);
+                } catch (parseError) {
+                    throw new Error('ไม่สามารถประมวลผลข้อมูลจากเซิร์ฟเวอร์ได้ (ยืนยัน OTP)');
+                }
+
+                if (!verifyResult.success) {
+                    throw new Error(verifyResult.error || 'รหัส OTP ไม่ถูกต้องหรือไม่พบ');
+                }
+
+                // If OTP is valid, proceed with actual login
+                const loginParams = new URLSearchParams({
+                    action: 'login',
+                    email: loginData.email,
+                    phone: loginData.phone
+                });
+
+                const loginResponse = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: loginParams,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                let loginResult;
+                try {
+                    const text = await loginResponse.text();
+                    loginResult = JSON.parse(text);
+                } catch (parseError) {
+                    throw new Error('ไม่สามารถประมวลผลข้อมูลจากเซิร์ฟเวอร์ได้ (เข้าสู่ระบบ)');
+                }
+
+                if (loginResult.success) {
+                    showStatus('success', loginResult.message || 'เข้าสู่ระบบสำเร็จ!');
+                    localStorage.setItem('token', loginResult.token);
+                    localStorage.setItem('userData', JSON.stringify(loginResult.user));
+                    window.location.href = 'profile.html';
+                } else {
+                    throw new Error(loginResult.error || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+                }
+
+            } catch (error) {
+                console.error('OTP Verification error:', error);
+                showStatus('error', 'เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                // Reset button state
+                verifyOtpBtn.disabled = false;
+                verifyOtpText.textContent = 'ยืนยันรหัส OTP';
+                verifyOtpSpinner.classList.add('hidden');
+            }
+        }
+
+        // Resend OTP
+        async function resendOtp() {
+            const resendOtpBtn = document.getElementById('resendOtpBtn');
+            resendOtpBtn.disabled = true;
+            showStatus('' , ''); // Clear previous messages
+
+            try {
+                if (!loginData.email) {
+                    throw new Error('ไม่พบข้อมูลอีเมลสำหรับการส่ง OTP ซ้ำ');
+                }
+
+                const params = new URLSearchParams({
+                    action: 'sendOtp',
+                    email: loginData.email
+                });
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: params,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                let result;
+                try {
+                    const text = await response.text();
+                    result = JSON.parse(text);
+                } catch (parseError) {
+                    throw new Error('ไม่สามารถประมวลผลข้อมูลจากเซิร์ฟเวอร์ได้ (ส่ง OTP ซ้ำ)');
+                }
+
+                if (result.success) {
+                    showStatus('success', result.message || 'ส่งรหัส OTP ใหม่แล้ว! กรุณาตรวจสอบอีเมลของคุณ');
+                } else {
+                    throw new Error(result.error || 'เกิดข้อผิดพลาดในการส่ง OTP ซ้ำ');
+                }
+            } catch (error) {
+                console.error('Resend OTP error:', error);
+                showStatus('error', 'เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                resendOtpBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

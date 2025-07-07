@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบยืมคืนโน็คบุค</title>
+    <meta name="description" content="ระบบยืมคืนโน็คบุคสำหรับสถาบันการศึกษา">
+    <meta name="keywords" content="notebook, ยืม, คืน, ระบบ, การศึกษา">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4285f4">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hero-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <div class="hero-bg text-white">
+        <div class="container mx-auto px-4 py-16">
+            <div class="text-center fade-in">
+                <div class="text-6xl mb-6">📚</div>
+                <h1 class="text-4xl md:text-6xl font-bold mb-4">
+                    ระบบยืมคืนโน็คบุค
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 opacity-90">
+                    จัดการการยืม-คืนอุปกรณ์อย่างมีประสิทธิภาพ
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="login.html" 
+                       class="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition duration-200 card-hover">
+                        เข้าสู่ระบบ
+                    </a>
+                    <a href="register.html" 
+                       class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition duration-200 card-hover">
+                        ลงทะเบียน
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="container mx-auto px-4 py-16">
+        <div class="text-center mb-12 fade-in">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">คุณสมบัติของระบบ</h2>
+            <p class="text-gray-600 text-lg">ระบบที่ออกแบบมาเพื่อความสะดวกและประสิทธิภาพ</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center card-hover fade-in">
+                <div class="text-4xl mb-4">👤</div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">จัดการผู้ใช้</h3>
+                <p class="text-gray-600">ลงทะเบียนและจัดการข้อมูลผู้ใช้งานอย่างง่ายดาย พร้อมระบบรูปโปรไฟล์</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center card-hover fade-in" style="animation-delay: 0.2s;">
+                <div class="text-4xl mb-4">💻</div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">ยืม-คืนโน็คบุค</h3>
+                <p class="text-gray-600">ติดตามการยืมและการคืนอุปกรณ์โน็คบุคได้อย่างมีประสิทธิภาพ</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center card-hover fade-in" style="animation-delay: 0.4s;">
+                <div class="text-4xl mb-4">📊</div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">รายงานและสถิติ</h3>
+                <p class="text-gray-600">ดูรายงานการใช้งานและสถิติต่างๆ เพื่อการจัดการที่ดีขึ้น</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="bg-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center fade-in">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6">เกี่ยวกับระบบ</h2>
+                <p class="text-gray-600 text-lg leading-relaxed mb-8">
+                    ระบบยืมคืนโน็คบุคนี้ถูกพัฒนาขึ้นเพื่อช่วยให้สถาบันการศึกษาสามารถจัดการ
+                    การยืมและการคืนอุปกรณ์คอมพิวเตอร์โน็คบุคได้อย่างมีระบบ ลดความผิดพลาด 
+                    และเพิ่มประสิทธิภาพในการทำงาน
+                </p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div>
+                        <div class="text-2xl font-bold text-blue-600">100%</div>
+                        <div class="text-gray-600">ฟรี</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-blue-600">24/7</div>
+                        <div class="text-gray-600">ใช้งานได้ตลอดเวลา</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-blue-600">📱</div>
+                        <div class="text-gray-600">รองรับมือถือ</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-blue-600">🔒</div>
+                        <div class="text-gray-600">ปลอดภัย</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <div class="text-2xl mb-4">📚</div>
+            <p class="mb-2">ระบบยืมคืนโน็คบุค</p>
+            <p class="text-gray-400 text-sm">พัฒนาเพื่อการศึกษา © 2024</p>
+        </div>
+    </footer>
+
+    <script>
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                // Show option to go to profile
+                const loginBtn = document.querySelector('a[href="login.html"]');
+                if (loginBtn) {
+                    loginBtn.textContent = 'ไปยังโปรไฟล์';
+                    loginBtn.href = 'profile.html';
+                }
+            }
+
+            // Register Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => {
+                            console.log('Service Worker registered with scope:', registration.scope);
+                        })
+                        .catch(error => {
+                            console.error('Service Worker registration failed:', error);
+                        });
+                });
+            }
+        });
+
+        // Add fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in elements
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9593765f64818949',t:'MTc1MTUxNTA4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
