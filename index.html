@@ -177,6 +177,8 @@
             observer.observe(el);
         });
     </script>
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <div id="g_id_onload"
          data-client_id="662702539784-01d43aftm8nfgevd4rn4gjagf3iqm3mh.apps.googleusercontent.com"
          data-callback="handleCredentialResponse">
@@ -184,8 +186,6 @@
     <div class="g_id_signin" data-type="standard"></div>
     <script>
     function handleCredentialResponse(response) {
-      // response.credential คือ id_token
-      // ส่ง id_token ไป Apps Script API
       fetch('https://script.google.com/macros/s/AKfycbxoH-lO6Nu6-u4v5JfwHRyeE6BjvxcPVkzn-tU0PjfJgD1mR_kPczYzIXjoaViMC0az/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -193,11 +193,11 @@
       })
       .then(res => res.json())
       .then(data => {
-        // ตรวจสอบผลลัพธ์และ redirect หรือแสดง error
         if (data.success) {
-          // login สำเร็จ
+          localStorage.setItem('userData', JSON.stringify(data.user));
+          window.location.href = 'profile.html';
         } else {
-          // login ไม่สำเร็จ
+          alert('เข้าสู่ระบบไม่สำเร็จ: ' + (data.error || ''));
         }
       });
     }
