@@ -186,7 +186,7 @@
     function handleCredentialResponse(response) {
       // response.credential คือ id_token
       // ส่ง id_token ไป Apps Script API
-      fetch('https://script.google.com/macros/s/AKfycbyYyFF7e2LQ4pgfKJ6cu_PmNZ-rbScPLWHn3ISxHzKB8mI7PU5WB9YqGxUSLUoaTHbH/exec', {
+      fetch('https://script.google.com/macros/s/AKfycbxoH-lO6Nu6-u4v5JfwHRyeE6BjvxcPVkzn-tU0PjfJgD1mR_kPczYzIXjoaViMC0az/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_token: response.credential })
