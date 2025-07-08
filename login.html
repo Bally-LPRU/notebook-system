@@ -7,6 +7,7 @@
     <meta name="description" content="เข้าสู่ระบบยืมคืนโน็คบุค">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
@@ -374,8 +375,10 @@
             .then(data => {
                 if (data.success) {
                     // login สำเร็จ
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+                    window.location.href = 'profile.html';
                 } else {
-                    // login ไม่สำเร็จ
+                    alert('เข้าสู่ระบบไม่สำเร็จ: ' + (data.error || ''));
                 }
             });
         }
