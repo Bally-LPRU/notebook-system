@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>จัดการการยืม-คืน - ระบบยืมคืนโน้ตบุ๊ก</title>
-    <meta name="description" content="หน้าจอสำหรับจัดการข้อมูลการยืม-คืนอุปกรณ์">
+    <title>จัดการอุปกรณ์ - ระบบยืมคืนโน้ตบุ๊ก</title>
+    <meta name="description" content="หน้าจอสำหรับจัดการข้อมูลอุปกรณ์โน้ตบุ๊ก">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -37,7 +37,7 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-gray-800">
-                    📝 จัดการการยืม-คืน
+                    💻 จัดการอุปกรณ์
                 </h1>
                 <button onclick="window.location.href='profile.html'" 
                         class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
@@ -47,64 +47,65 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-8 max-w-5xl">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- Status Messages -->
         <div id="statusMessage" class="hidden mb-6 p-4 rounded-lg"></div>
 
         <div class="bg-white rounded-xl shadow-xl p-8 mb-8 fade-in">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">รายการยืม-คืน</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">รายการอุปกรณ์</h2>
             <div class="mb-4 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <div class="flex-grow w-full sm:w-auto">
-                    <input type="text" id="searchInput" placeholder="ค้นหาด้วย Record ID, ชื่ออุปกรณ์, ผู้ใช้..."
+                    <input type="text" id="searchInput" placeholder="ค้นหาด้วยชื่ออุปกรณ์, S/N..."
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
                 </div>
                 <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                    <select id="typeFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                        <option value="">-- กรองด้วยประเภท --</option>
+                        <option value="Notebook">Notebook</option>
+                        <option value="Tablet">Tablet</option>
+                        <option value="Projector">Projector</option>
+                        <option value="Other">Other</option>
+                    </select>
                     <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
                         <option value="">-- กรองด้วยสถานะ --</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
+                        <option value="Available">Available</option>
                         <option value="Borrowed">Borrowed</option>
-                        <option value="Returned">Returned</option>
-                        <option value="Overdue">Overdue</option>
-                        <option value="Lost by User">Lost by User</option>
-                        <option value="Rejected">Rejected</option>
-                    </select>
-                    <select id="deviceFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
-                        <option value="">-- กรองด้วยอุปกรณ์ --</option>
-                        <!-- Devices will be loaded here by JavaScript -->
-                    </select>
-                    <select id="userFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
-                        <option value="">-- กรองด้วยผู้ใช้ --</option>
-                        <!-- Users will be loaded here by JavaScript -->
+                        <option value="Under Maintenance">Under Maintenance</option>
+                        <option value="Lost">Lost</option>
                     </select>
                 </div>
                 <div class="mb-4 text-right flex justify-end space-x-4">
-                    <button onclick="showAddBorrowRecordForm()"
+                    <button onclick="showAddDeviceForm()"
                             class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200 font-medium">
-                        + เพิ่มรายการยืม-คืนใหม่
+                        + เพิ่มอุปกรณ์ใหม่
                     </button>
+                    <a href="borrow_record_management.html"
+                       class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-200 font-medium flex items-center justify-center">
+                        <span class="mr-2">📝</span>จัดการการยืม-คืน
+                    </a>
                     <a href="reports.html"
                        class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition duration-200 font-medium flex items-center justify-center">
                         <span class="mr-2">📊</span>รายงาน
                     </a>
                 </div>
             </div>
-            <div id="borrowRecordListContainer" class="overflow-x-auto">
+            <div id="deviceListContainer" class="overflow-x-auto">
                 <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
                     <thead>
                         <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="recordId">Record ID <span class="sort-icon" data-sort-key="recordId"></span></th>
-                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="deviceId">Device Name <span class="sort-icon" data-sort-key="deviceId"></span></th>
-                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="userId">User Name <span class="sort-icon" data-sort-key="userId"></span></th>
-                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="borrowDate">Borrow Date <span class="sort-icon" data-sort-key="borrowDate"></span></th>
-                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="dueDate">Due Date <span class="sort-icon" data-sort-key="dueDate"></span></th>
-                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="returnDate">Return Date <span class="sort-icon" data-sort-key="returnDate"></span></th>
-                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="borrowStatus">Status <span class="sort-icon" data-sort-key="borrowStatus"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="deviceId">Device ID <span class="sort-icon" data-sort-key="deviceId"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="deviceName">Device Name <span class="sort-icon" data-sort-key="deviceName"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="serialNumber">Serial Number <span class="sort-icon" data-sort-key="serialNumber"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="type">Type <span class="sort-icon" data-sort-key="type"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="model">Model <span class="sort-icon" data-sort-key="model"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="status">Status <span class="sort-icon" data-sort-key="status"></span></th>
+                            <th class="py-3 px-6 border-b cursor-pointer" data-sort-by="condition">Condition <span class="sort-icon" data-sort-key="condition"></span></th>
+                            <th class="py-3 px-6 border-b">Notes</th>
                             <th class="py-3 px-6 border-b action-header">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="borrowRecordsTableBody">
-                        <!-- Borrow record rows will be injected here by JavaScript -->
+                    <tbody id="devicesTableBody">
+                        <!-- Device rows will be injected here by JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -123,65 +124,57 @@
                     </select>
                 </div>
             </div>
-            <p id="noBorrowRecordsMessage" class="text-center text-gray-500 mt-4 hidden">ไม่พบรายการยืม-คืน</p>
+            <p id="noDevicesMessage" class="text-center text-gray-500 mt-4 hidden">ไม่พบอุปกรณ์ในระบบ</p>
         </div>
 
-        <!-- Add/Edit Borrow Record Form -->
-        <div id="borrowRecordFormContainer" class="bg-white rounded-xl shadow-xl p-8 mb-8 hidden fade-in">
-            <h2 id="formTitle" class="text-2xl font-bold text-gray-800 mb-6">เพิ่มรายการยืม-คืนใหม่</h2>
-            <form id="borrowRecordForm" class="space-y-6">
-                <!-- Hidden input for Record ID (for updates) -->
-                <input type="hidden" id="recordId" name="recordId">
+        <!-- Add/Edit Device Form -->
+        <div id="deviceFormContainer" class="bg-white rounded-xl shadow-xl p-8 mb-8 hidden fade-in">
+            <h2 id="formTitle" class="text-2xl font-bold text-gray-800 mb-6">เพิ่มอุปกรณ์ใหม่</h2>
+            <form id="deviceForm" class="space-y-6">
+                <!-- Hidden input for Device ID (for updates) -->
+                <input type="hidden" id="deviceId" name="deviceId">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="deviceId" class="block text-sm font-medium text-gray-700 mb-2">Device ID *</label>
-                        <select id="deviceId" name="deviceId" required
+                        <label for="deviceName" class="block text-sm font-medium text-gray-700 mb-2">ชื่ออุปกรณ์ *</label>
+                        <input type="text" id="deviceName" name="deviceName" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                    </div>
+                    <div>
+                        <label for="serialNumber" class="block text-sm font-medium text-gray-700 mb-2">หมายเลขซีเรียล *</label>
+                        <input type="text" id="serialNumber" name="serialNumber" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                    </div>
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-2">ประเภท *</label>
+                        <select id="type" name="type" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
-                            <option value="">เลือกอุปกรณ์</option>
-                            <!-- Devices will be loaded here -->
+                            <option value="">เลือกประเภท</option>
+                            <option value="Notebook">Notebook</option>
+                            <option value="Tablet">Tablet</option>
+                            <option value="Projector">Projector</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
                     <div>
-                        <label for="userId" class="block text-sm font-medium text-gray-700 mb-2">User ID *</label>
-                        <select id="userId" name="userId" required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
-                            <option value="">เลือกผู้ใช้</option>
-                            <!-- Users will be loaded here -->
-                        </select>
-                    </div>
-                    <div>
-                        <label for="borrowDate" class="block text-sm font-medium text-gray-700 mb-2">วันที่ยืม *</label>
-                        <input type="date" id="borrowDate" name="borrowDate" required
+                        <label for="model" class="block text-sm font-medium text-gray-700 mb-2">รุ่น *</label>
+                        <input type="text" id="model" name="model" required
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
                     </div>
                     <div>
-                        <label for="dueDate" class="block text-sm font-medium text-gray-700 mb-2">วันที่ต้องคืน *</label>
-                        <input type="date" id="dueDate" name="dueDate" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
-                    </div>
-                    <div>
-                        <label for="returnDate" class="block text-sm font-medium text-gray-700 mb-2">วันที่คืนจริง</label>
-                        <input type="date" id="returnDate" name="returnDate"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
-                    </div>
-                    <div>
-                        <label for="borrowStatus" class="block text-sm font-medium text-gray-700 mb-2">สถานะการยืม *</label>
-                        <select id="borrowStatus" name="borrowStatus" required
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">สถานะ *</label>
+                        <select id="status" name="status" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
                             <option value="">เลือกสถานะ</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Rejected">Rejected</option>
+                            <option value="Available">Available</option>
                             <option value="Borrowed">Borrowed</option>
-                            <option value="Returned">Returned</option>
-                            <option value="Overdue">Overdue</option>
-                            <option value="Lost by User">Lost by User</option>
+                            <option value="Under Maintenance">Under Maintenance</option>
+                            <option value="Lost">Lost</option>
                         </select>
                     </div>
-                    <div id="returnConditionField" class="md:col-span-2 hidden">
-                        <label for="returnCondition" class="block text-sm font-medium text-gray-700 mb-2">สภาพอุปกรณ์หลังคืน</label>
-                        <select id="returnCondition" name="returnCondition"
+                    <div>
+                        <label for="condition" class="block text-sm font-medium text-gray-700 mb-2">สภาพ *</label>
+                        <select id="condition" name="condition" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
                             <option value="">เลือกสภาพ</option>
                             <option value="Excellent">Excellent</option>
@@ -190,30 +183,20 @@
                             <option value="Poor">Poor</option>
                         </select>
                     </div>
-                    <div id="returnNotesField" class="md:col-span-2 hidden">
-                        <label for="returnNotes" class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุการคืน</label>
-                        <textarea id="returnNotes" name="returnNotes" rows="3"
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"></textarea>
-                    </div>
-                    <div>
-                        <label for="borrowerNotes" class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุผู้ยืม</label>
-                        <textarea id="borrowerNotes" name="borrowerNotes" rows="3"
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"></textarea>
-                    </div>
-                    <div>
-                        <label for="adminNotes" class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุผู้ดูแลระบบ</label>
-                        <textarea id="adminNotes" name="adminNotes" rows="3"
+                    <div class="md:col-span-2">
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</label>
+                        <textarea id="notes" name="notes" rows="3"
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"></textarea>
                     </div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 pt-6">
-                    <button type="submit" id="saveBorrowRecordBtn"
+                    <button type="submit" id="saveDeviceBtn"
                             class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-medium flex items-center justify-center">
-                        <span id="saveBorrowRecordText">บันทึกรายการยืม-คืน</span>
-                        <div id="saveBorrowRecordSpinner" class="loading-spinner ml-2 hidden"></div>
+                        <span id="saveDeviceText">บันทึกอุปกรณ์</span>
+                        <div id="saveDeviceSpinner" class="loading-spinner ml-2 hidden"></div>
                     </button>
-                    <button type="button" onclick="cancelBorrowRecordEdit()"
+                    <button type="button" onclick="cancelDeviceEdit()"
                             class="flex-1 bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-200 font-medium">
                         ยกเลิก
                     </button>
@@ -225,22 +208,19 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTRInbt2TSdZDQhjOlz3ThZve91Cve7eGgDGJzMDpvDj-8qYEcOI1eJWjgHMTg5Xl/exec';
 
-        let currentEditingRecordId = null; // To keep track of the record being edited
-        let availableDevices = []; // Store fetched devices for dropdown
-        let registeredUsers = []; // Store fetched users for dropdown
-        let allBorrowRecords = []; // Store all fetched borrow records
-        let currentUserStatus = null; // New variable to store user's status
-        let currentUserId = null; // New variable to store current user ID
+        let currentEditingDeviceId = null; // To keep track of the device being edited
+        let allDevices = []; // Store all fetched devices
 
         // Pagination, Sorting, and Filtering state
         let currentPage = 1;
         let rowsPerPage = 10; // Default rows per page
-        let currentSortColumn = 'recordId'; // Default sort column
+        let currentSortColumn = 'deviceName'; // Default sort column
         let currentSortDirection = 'asc'; // Default sort direction
-        let filteredAndSortedRecords = []; // Records after applying filters and sort
+        let filteredAndSortedDevices = []; // Devices after applying filters and sort
 
         let token = null;
         let userData = null;
+        let currentUserStatus = null; // New variable to store user's status
 
         document.addEventListener('DOMContentLoaded', function() {
             token = localStorage.getItem('token');
@@ -251,32 +231,25 @@
                 return;
             }
 
-            try {
-                const user = JSON.parse(userData);
-                currentUserStatus = user.userStatus; // Set currentUserStatus
-                currentUserId = user.id; // Set current user ID
-                
-                // Redirect if not admin for this page
-                if (currentUserStatus !== 'ผู้ดูแลระบบ') {
-                    window.location.href = 'profile.html'; // Redirect non-admins
-                    return;
-                }
+            const user = JSON.parse(userData);
+            currentUserStatus = user.userStatus; // Set currentUserStatus
 
-                updateUIBasedOnPermissions(); // Update UI based on permissions
-                fetchUsersAndDevicesAndBorrowRecords(); // Fetch all necessary data
-
-            } catch (e) {
-                console.error("Error parsing user data or token:", e);
-                showStatus('error', 'ข้อมูลผู้ใช้ไม่ถูกต้อง กรุณาเข้าสู่ระบบอีกครั้ง');
-                logout();
+            // Redirect if not admin (basic check, more robust check on backend)
+            if (currentUserStatus !== 'ผู้ดูแลระบบ') {
+                window.location.href = 'profile.html'; // Redirect non-admins
                 return;
             }
 
-            // Event Listeners for filters and pagination
+            // Update UI based on permissions
+            updateUIBasedOnPermissions();
+
+            // Fetch and display devices
+            fetchDevices();
+
+            // Event listeners for search, filter, pagination
             document.getElementById('searchInput').addEventListener('input', applyFiltersAndPagination);
+            document.getElementById('typeFilter').addEventListener('change', applyFiltersAndPagination);
             document.getElementById('statusFilter').addEventListener('change', applyFiltersAndPagination);
-            document.getElementById('deviceFilter').addEventListener('change', applyFiltersAndPagination);
-            document.getElementById('userFilter').addEventListener('change', applyFiltersAndPagination);
             document.getElementById('prevPageBtn').addEventListener('click', () => changePage(-1));
             document.getElementById('nextPageBtn').addEventListener('click', () => changePage(1));
             document.getElementById('rowsPerPageSelect').addEventListener('change', (e) => {
@@ -293,527 +266,81 @@
                 });
             });
 
-            // Form submission for add/edit borrow record
-            document.getElementById('borrowRecordForm').addEventListener('submit', handleBorrowRecordFormSubmit);
-
-            // Listen for changes on borrowStatus dropdown to show/hide return-related fields
-            document.getElementById('borrowStatus').addEventListener('change', function() {
-                const status = this.value;
-                const returnDateDiv = document.getElementById('returnDate').parentNode;
-                const returnConditionField = document.getElementById('returnConditionField');
-                const returnNotesField = document.getElementById('returnNotesField');
-
-                if (status === 'Returned' || status === 'Lost by User') {
-                    returnDateDiv.classList.remove('hidden');
-                    document.getElementById('returnDate').required = true;
-                    returnConditionField.classList.remove('hidden');
-                    document.getElementById('returnCondition').required = true;
-                    returnNotesField.classList.remove('hidden');
-                } else {
-                    returnDateDiv.classList.add('hidden');
-                    document.getElementById('returnDate').required = false;
-                    document.getElementById('returnDate').value = '';
-                    returnConditionField.classList.add('hidden');
-                    document.getElementById('returnCondition').required = false;
-                    document.getElementById('returnCondition').value = '';
-                    returnNotesField.classList.add('hidden');
-                    document.getElementById('returnNotes').value = '';
-                }
-            });
+            // Form submission for add/edit device
+            document.getElementById('deviceForm').addEventListener('submit', handleDeviceFormSubmit);
         });
 
-        async function fetchUsersAndDevicesAndBorrowRecords() {
+        async function fetchDevices() {
             try {
-                // Fetch Users
-                const userResponse = await google.script.run
-                    .withSuccessHandler(res => {
-                        if (res.success) {
-                            registeredUsers = res.users;
-                            populateUserFilter();
-                            populateUserDropdown();
-                        } else {
-                            showStatus('error', `ไม่สามารถโหลดข้อมูลผู้ใช้: ${res.error}`);
-                        }
-                    })
-                    .withFailureHandler(error => {
-                        showStatus('error', `เกิดข้อผิดพลาดในการโหลดข้อมูลผู้ใช้: ${error.message}`);
-                    })
-                    .readUsers(null, token); // Fetch all users
-                
-                // Fetch Devices
-                const deviceResponse = await google.script.run
-                    .withSuccessHandler(res => {
-                        if (res.success) {
-                            availableDevices = res.devices;
-                            populateDeviceFilter();
-                            populateDeviceDropdown();
-                        } else {
-                            showStatus('error', `ไม่สามารถโหลดข้อมูลอุปกรณ์: ${res.error}`);
-                        }
-                    })
-                    .withFailureHandler(error => {
-                        showStatus('error', `เกิดข้อผิดพลาดในการโหลดข้อมูลอุปกรณ์: ${error.message}`);
-                    })
-                    .readDevices(null, token); // Fetch all devices
+                const params = new URLSearchParams({
+                    action: 'readDevices',
+                    token: token
+                });
 
-                // Fetch Borrow Records
-                const recordResponse = await google.script.run
-                    .withSuccessHandler(res => {
-                        if (res.success) {
-                            allBorrowRecords = res.records.map(record => {
-                                // Add deviceName and userName for filtering/sorting
-                                const device = availableDevices.find(d => d.deviceId === record.deviceId);
-                                const user = registeredUsers.find(u => u.id === record.userId);
-                                return {
-                                    ...record,
-                                    deviceName: device ? device.deviceName : 'ไม่พบอุปกรณ์',
-                                    userName: user ? `${user.firstName} ${user.lastName}` : 'ไม่พบผู้ใช้'
-                                };
-                            });
-                            applyFiltersAndSort();
-                        } else {
-                            showStatus('error', `ไม่สามารถโหลดรายการยืม-คืน: ${res.error}`);
-                        }
-                    })
-                    .withFailureHandler(error => {
-                        showStatus('error', `เกิดข้อผิดพลาดในการโหลดรายการยืม-คืน: ${error.message}`);
-                    })
-                    .readBorrowRecords({ userId: null, deviceId: null }, token); // Fetch all records
+                const response = await fetch(SCRIPT_URL + '?' + params.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
 
+                const result = await response.json();
+
+                if (result.success) {
+                    allDevices = result.data; // Store fetched devices globally
+                    applyFiltersAndSort(); // Apply filters and sort after fetching
+                } else {
+                    showStatus('error', result.error || 'ไม่สามารถดึงข้อมูลอุปกรณ์ได้');
+                }
             } catch (error) {
-                showStatus('error', `เกิดข้อผิดพลาดในการโหลดข้อมูลเริ่มต้น: ${error.message}`);
+                console.error('Error fetching devices:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการดึงข้อมูลอุปกรณ์: ' + error.message);
             }
         }
 
-        function populateUserFilter() {
-            const userFilterSelect = document.getElementById('userFilter');
-            userFilterSelect.innerHTML = '<option value="">-- กรองด้วยผู้ใช้ --</option>';
-            registeredUsers.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = `${user.firstName} ${user.lastName} (${user.studentId})`;
-                userFilterSelect.appendChild(option);
-            });
-        }
-
-        function populateDeviceFilter() {
-            const deviceFilterSelect = document.getElementById('deviceFilter');
-            deviceFilterSelect.innerHTML = '<option value="">-- กรองด้วยอุปกรณ์ --</option>';
-            availableDevices.forEach(device => {
-                const option = document.createElement('option');
-                option.value = device.deviceId;
-                option.textContent = `${device.deviceName} (${device.serialNumber})`;
-                deviceFilterSelect.appendChild(option);
-            });
-        }
-
-        function populateUserDropdown() {
-            const userDropdown = document.getElementById('userId');
-            userDropdown.innerHTML = '<option value="">เลือกผู้ใช้</option>';
-            registeredUsers.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = `${user.firstName} ${user.lastName} (${user.studentId})`;
-                userDropdown.appendChild(option);
-            });
-        }
-
-        function populateDeviceDropdown() {
-            const deviceDropdown = document.getElementById('deviceId');
-            deviceDropdown.innerHTML = '<option value="">เลือกอุปกรณ์</option>';
-            availableDevices.forEach(device => {
-                const option = document.createElement('option');
-                option.value = device.deviceId;
-                option.textContent = `${device.deviceName} (${device.serialNumber}) - ${device.status}`;
-                deviceDropdown.appendChild(option);
-            });
-        }
-
-        function renderBorrowRecordsTable() {
-            const tableBody = document.getElementById('borrowRecordsTableBody');
-            tableBody.innerHTML = '';
-            const noRecordsMessage = document.getElementById('noBorrowRecordsMessage');
-
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = startIndex + rowsPerPage;
-            const recordsToDisplay = filteredAndSortedRecords.slice(startIndex, endIndex);
-
-            if (recordsToDisplay.length === 0) {
-                noRecordsMessage.classList.remove('hidden');
-                document.getElementById('paginationSummary').textContent = '';
-                document.getElementById('pageNumbers').textContent = '';
-                document.getElementById('prevPageBtn').disabled = true;
-                document.getElementById('nextPageBtn').disabled = true;
-                return;
-            }
-
-            noRecordsMessage.classList.add('hidden');
-
-            recordsToDisplay.forEach(record => {
-                const row = tableBody.insertRow();
-                row.innerHTML = `
-                    <td class="py-3 px-6 border-b text-gray-800 text-sm">${record.recordId}</td>
-                    <td class="py-3 px-6 border-b text-gray-800 text-sm">${record.deviceName}</td>
-                    <td class="py-3 px-6 border-b text-gray-800 text-sm">${record.userName}</td>
-                    <td class="py-3 px-6 border-b text-gray-800 text-sm">${record.borrowDate}</td>
-                    <td class="py-3 px-6 border-b text-gray-800 text-sm">${record.dueDate}</td>
-                    <td class="py-3 px-6 border-b text-gray-800 text-sm">${record.returnDate || '-'}</td>
-                    <td class="py-3 px-6 border-b text-gray-800 text-sm">${record.borrowStatus}</td>
-                    <td class="py-3 px-6 border-b text-gray-800 text-sm action-cell">
-                        <div class="flex space-x-2 flex-wrap">
-                            ${currentUserStatus === 'ผู้ดูแลระบบ' ? `
-                                <button onclick="editBorrowRecord('${record.recordId}')" class="bg-blue-500 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-600 transition duration-200">แก้ไข</button>
-                                <button onclick="deleteBorrowRecord('${record.recordId}')" class="bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600 transition duration-200">ลบ</button>
-                            ` : ''}
-
-                            ${(currentUserStatus === 'ผู้ดูแลระบบ' && record.borrowStatus === 'Pending') ? `
-                                <button onclick="approveBorrowRequest('${record.recordId}', this)" class="bg-green-500 text-white px-3 py-1 rounded-md text-sm hover:bg-green-600 transition duration-200 flex items-center justify-center">
-                                    <span class="button-text">อนุมัติ</span><div class="loading-spinner ml-2 hidden"></div>
-                                </button>
-                                <button onclick="rejectBorrowRequest('${record.recordId}', this)" class="bg-yellow-500 text-white px-3 py-1 rounded-md text-sm hover:bg-yellow-600 transition duration-200 flex items-center justify-center">
-                                    <span class="button-text">ปฏิเสธ</span><div class="loading-spinner ml-2 hidden"></div>
-                                </button>
-                            ` : ''}
-
-                            ${(currentUserStatus === 'ผู้ดูแลระบบ' || (currentUserStatus !== 'ผู้ดูแลระบบ' && record.userId === currentUserId)) && (record.borrowStatus === 'Borrowed' || record.borrowStatus === 'Approved' || record.borrowStatus === 'Overdue') && !record.returnDate ? `
-                                <button onclick="editBorrowRecord('${record.recordId}')" class="bg-purple-500 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-600 transition duration-200">คืนอุปกรณ์</button>
-                            ` : ''}
-                        </div>
-                    </td>
-                `;
-            });
-            updatePaginationControls();
-        }
-
-        async function approveBorrowRequest(recordId, buttonElement) {
-            if (!await confirmAction('คุณแน่ใจหรือไม่ที่จะอนุมัติคำขอการยืมนี้?')) {
-                return;
-            }
-            showLoadingSpinner(buttonElement);
-            try {
-                const response = await google.script.run
-                    .withSuccessHandler(res => {
-                        hideLoadingSpinner(buttonElement);
-                        if (res.success) {
-                            showStatus('success', 'อนุมัติคำขอการยืมเรียบร้อยแล้ว!');
-                            fetchBorrowRecords(); // Refresh table
-                        } else {
-                            showStatus('error', `ไม่สามารถอนุมัติคำขอ: ${res.error}`);
-                        }
-                    })
-                    .withFailureHandler(error => {
-                        hideLoadingSpinner(buttonElement);
-                        showStatus('error', `เกิดข้อผิดพลาดในการอนุมัติคำขอ: ${error.message}`);
-                    })
-                    .updateBorrowRecord(recordId, { borrowStatus: 'Approved' }, token);
-            } catch (error) {
-                hideLoadingSpinner(buttonElement);
-                showStatus('error', `เกิดข้อผิดพลาดในการส่งคำขออนุมัติ: ${error.message}`);
-            }
-        }
-
-        async function rejectBorrowRequest(recordId, buttonElement) {
-            if (!await confirmAction('คุณแน่ใจหรือไม่ที่จะปฏิเสธคำขอการยืมนี้?')) {
-                return;
-            }
-            showLoadingSpinner(buttonElement);
-            try {
-                const response = await google.script.run
-                    .withSuccessHandler(res => {
-                        hideLoadingSpinner(buttonElement);
-                        if (res.success) {
-                            showStatus('success', 'ปฏิเสธคำขอการยืมเรียบร้อยแล้ว!');
-                            fetchBorrowRecords(); // Refresh table
-                        } else {
-                            showStatus('error', `ไม่สามารถปฏิเสธคำขอ: ${res.error}`);
-                        }
-                    })
-                    .withFailureHandler(error => {
-                        hideLoadingSpinner(buttonElement);
-                        showStatus('error', `เกิดข้อผิดพลาดในการปฏิเสธคำขอ: ${error.message}`);
-                    })
-                    .updateBorrowRecord(recordId, { borrowStatus: 'Rejected' }, token);
-            } catch (error) {
-                hideLoadingSpinner(buttonElement);
-                showStatus('error', `เกิดข้อผิดพลาดในการส่งคำขอปฏิเสธ: ${error.message}`);
-            }
-        }
-
-        async function showReturnDeviceForm(recordId) {
-            currentEditingRecordId = recordId;
-            const record = allBorrowRecords.find(r => r.recordId === recordId);
-            if (record) {
-                document.getElementById('formTitle').textContent = 'บันทึกการคืนอุปกรณ์';
-                document.getElementById('recordId').value = record.recordId;
-                document.getElementById('deviceId').value = record.deviceId;
-                document.getElementById('userId').value = record.userId;
-                document.getElementById('borrowDate').value = record.borrowDate ? formatDateForInput(record.borrowDate) : '';
-                document.getElementById('dueDate').value = record.dueDate ? formatDateForInput(record.dueDate) : '';
-                document.getElementById('returnDate').value = record.returnDate ? formatDateForInput(record.returnDate) : formatDateForInput(new Date()); // Default to today
-                document.getElementById('borrowStatus').value = 'Returned'; // Default to Returned
-                document.getElementById('borrowerNotes').value = record.borrowerNotes || '';
-                document.getElementById('adminNotes').value = record.adminNotes || '';
-                document.getElementById('returnCondition').value = record.returnCondition || '';
-                document.getElementById('returnNotes').value = record.returnNotes || '';
-
-                // Disable fields not relevant for return process
-                document.getElementById('deviceId').disabled = true;
-                document.getElementById('userId').disabled = true;
-                document.getElementById('borrowDate').disabled = true;
-                document.getElementById('dueDate').disabled = true;
-                document.getElementById('borrowStatus').disabled = true; // Status should be 'Returned'
-
-                // Show return-specific fields
-                document.getElementById('returnConditionField').classList.remove('hidden');
-                document.getElementById('returnNotesField').classList.remove('hidden');
-
-                document.getElementById('borrowRecordFormContainer').classList.remove('hidden');
-                window.scrollTo({ top: document.getElementById('borrowRecordFormContainer').offsetTop - 20, behavior: 'smooth' });
-            } else {
-                showStatus('error', 'ไม่พบรายการยืม-คืนที่ต้องการคืน');
-            }
-        }
-
-        async function saveBorrowRecord() {
-            const form = document.getElementById('borrowRecordForm');
-            const recordId = document.getElementById('recordId').value;
-            const deviceId = document.getElementById('deviceId').value;
-            const userId = document.getElementById('userId').value;
-            const borrowDate = document.getElementById('borrowDate').value;
-            const dueDate = document.getElementById('dueDate').value;
-            const returnDate = document.getElementById('returnDate').value;
-            const borrowStatus = document.getElementById('borrowStatus').value;
-            const borrowerNotes = document.getElementById('borrowerNotes').value;
-            const adminNotes = document.getElementById('adminNotes').value;
-            const returnCondition = document.getElementById('returnCondition').value;
-            const returnNotes = document.getElementById('returnNotes').value;
-
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
-            let recordData = {
-                deviceId: deviceId,
-                userId: userId,
-                borrowDate: borrowDate,
-                dueDate: dueDate,
-                returnDate: returnDate,
-                borrowStatus: borrowStatus,
-                borrowerNotes: borrowerNotes,
-                adminNotes: adminNotes,
-                returnCondition: returnCondition,
-                returnNotes: returnNotes
-            };
-
-            showLoadingSpinner(document.getElementById('saveBorrowRecordBtn'));
-            try {
-                const response = await google.script.run
-                    .withSuccessHandler(res => {
-                        hideLoadingSpinner(document.getElementById('saveBorrowRecordBtn'));
-                        if (res.success) {
-                            showStatus('success', `บันทึกรายการยืม-คืนสำเร็จ: ${res.message || ''}`);
-                            cancelBorrowRecordEdit(); // Clear form and hide
-                            fetchBorrowRecords(); // Refresh table
-                        } else {
-                            showStatus('error', `ไม่สามารถบันทึกรายการยืม-คืน: ${res.error}`);
-                        }
-                    })
-                    .withFailureHandler(error => {
-                        hideLoadingSpinner(document.getElementById('saveBorrowRecordBtn'));
-                        showStatus('error', `เกิดข้อผิดพลาดในการบันทึกรายการยืม-คืน: ${error.message}`);
-                    })
-                    .updateBorrowRecord(recordId, recordData, token); // Always update, even for 'add'
-            } catch (error) {
-                hideLoadingSpinner(document.getElementById('saveBorrowRecordBtn'));
-                showStatus('error', `เกิดข้อผิดพลาดในการส่งคำขอบันทึก: ${error.message}`);
-            }
-        }
-
-        function cancelBorrowRecordEdit() {
-            document.getElementById('borrowRecordForm').reset();
-            document.getElementById('borrowRecordFormContainer').classList.add('hidden');
-            currentEditingRecordId = null;
-
-            // Re-enable fields and hide return-specific fields
-            document.getElementById('deviceId').disabled = false;
-            document.getElementById('userId').disabled = false;
-            document.getElementById('borrowDate').disabled = false;
-            document.getElementById('dueDate').disabled = false;
-            document.getElementById('borrowStatus').disabled = false;
-            document.getElementById('borrowStatus').value = 'Pending'; // Default status for new records
-            document.getElementById('returnConditionField').classList.add('hidden');
-            document.getElementById('returnNotesField').classList.add('hidden');
-        }
-
-        async function deleteBorrowRecord(recordId) {
-            if (!await confirmAction('คุณแน่ใจหรือไม่ที่จะลบรายการยืม-คืนนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้')) {
-                return;
-            }
-            showLoadingSpinner(event.target); // Show spinner on the delete button
-            try {
-                const response = await google.script.run
-                    .withSuccessHandler(res => {
-                        hideLoadingSpinner(event.target); // Hide spinner
-                        if (res.success) {
-                            showStatus('success', 'ลบรายการยืม-คืนเรียบร้อยแล้ว!');
-                            fetchBorrowRecords(); // Refresh table
-                        } else {
-                            showStatus('error', `ไม่สามารถลบรายการยืม-คืน: ${res.error}`);
-                        }
-                    })
-                    .withFailureHandler(error => {
-                        hideLoadingSpinner(event.target); // Hide spinner
-                        showStatus('error', `เกิดข้อผิดพลาดในการลบรายการยืม-คืน: ${error.message}`);
-                    })
-                    .deleteBorrowRecord(recordId, token);
-            } catch (error) {
-                hideLoadingSpinner(event.target); // Hide spinner
-                showStatus('error', `เกิดข้อผิดพลาดในการส่งคำขอลบ: ${error.message}`);
-            }
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString('th-TH', options);
-        }
-
-        function formatDateForInput(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        function getStatusClass(status) {
-            switch (status) {
-                case 'Pending': return 'bg-yellow-100 text-yellow-800';
-                case 'Approved': return 'bg-blue-100 text-blue-800';
-                case 'Borrowed': return 'bg-blue-100 text-blue-800';
-                case 'Returned': return 'bg-green-100 text-green-800';
-                case 'Overdue': return 'bg-red-100 text-red-800';
-                case 'Lost by User': return 'bg-gray-100 text-gray-800';
-                case 'Rejected': return 'bg-gray-100 text-gray-800';
-                default: return 'bg-gray-100 text-gray-800';
-            }
-        }
-
-        // --- Utility functions for Loading and Confirmation ---
-        function showLoadingSpinner(buttonElement) {
-            const spinner = buttonElement.querySelector('.loading-spinner');
-            const textSpan = buttonElement.querySelector('.button-text');
-            if (spinner) spinner.classList.remove('hidden');
-            if (textSpan) textSpan.classList.add('hidden');
-            buttonElement.disabled = true;
-            buttonElement.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-
-        function hideLoadingSpinner(buttonElement) {
-            const spinner = buttonElement.querySelector('.loading-spinner');
-            const textSpan = buttonElement.querySelector('.button-text');
-            if (spinner) spinner.classList.add('hidden');
-            if (textSpan) textSpan.classList.remove('hidden');
-            buttonElement.disabled = false;
-            buttonElement.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
-
-        function confirmAction(message) {
-            return new Promise((resolve) => {
-                const result = confirm(message);
-                resolve(result);
-            });
-        }
-
-        // --- Filtering, Sorting, Pagination Logic (Existing) ---
         function applyFiltersAndSort() {
-            let records = [...allBorrowRecords];
+            let tempDevices = [...allDevices];
 
+            // 1. Apply Search Filter
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             if (searchTerm) {
-                records = records.filter(record =>
-                    record.recordId.toLowerCase().includes(searchTerm) ||
-                    record.deviceName.toLowerCase().includes(searchTerm) ||
-                    record.userName.toLowerCase().includes(searchTerm)
+                tempDevices = tempDevices.filter(device => 
+                    (device.deviceName && device.deviceName.toLowerCase().includes(searchTerm)) ||
+                    (device.serialNumber && device.serialNumber.toLowerCase().includes(searchTerm))
                 );
             }
 
+            // 2. Apply Type Filter
+            const typeFilter = document.getElementById('typeFilter').value;
+            if (typeFilter) {
+                tempDevices = tempDevices.filter(device => device.type === typeFilter);
+            }
+
+            // 3. Apply Status Filter
             const statusFilter = document.getElementById('statusFilter').value;
             if (statusFilter) {
-                records = records.filter(record => record.borrowStatus === statusFilter);
+                tempDevices = tempDevices.filter(device => device.status === statusFilter);
             }
 
-            const deviceFilter = document.getElementById('deviceFilter').value;
-            if (deviceFilter) {
-                records = records.filter(record => record.deviceId === deviceFilter);
-            }
+            // 4. Apply Sorting
+            if (currentSortColumn) {
+                tempDevices.sort((a, b) => {
+                    const aValue = a[currentSortColumn];
+                    const bValue = b[currentSortColumn];
 
-            const userFilter = document.getElementById('userFilter').value;
-            if (userFilter) {
-                records = records.filter(record => record.userId === userFilter);
-            }
+                    if (aValue === undefined || bValue === undefined) return 0;
 
-            // Sorting
-            records.sort((a, b) => {
-                let aValue = a[currentSortColumn];
-                let bValue = b[currentSortColumn];
-
-                // Handle date sorting
-                if (currentSortColumn.includes('Date')) {
-                    aValue = new Date(aValue || '1970-01-01'); // Treat empty dates as very old
-                    bValue = new Date(bValue || '1970-01-01');
-                }
-
-                if (aValue < bValue) return currentSortDirection === 'asc' ? -1 : 1;
-                if (aValue > bValue) return currentSortDirection === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            filteredAndSortedRecords = records;
-            currentPage = 1; // Reset to first page after filter/sort
-            renderBorrowRecordsTable();
-        }
-
-        function setupEventListeners() {
-            document.getElementById('searchInput').addEventListener('input', applyFiltersAndSort);
-            document.getElementById('statusFilter').addEventListener('change', applyFiltersAndSort);
-            document.getElementById('deviceFilter').addEventListener('change', applyFiltersAndSort);
-            document.getElementById('userFilter').addEventListener('change', applyFiltersAndSort);
-
-            document.querySelectorAll('th[data-sort-by]').forEach(header => {
-                header.addEventListener('click', (event) => {
-                    const sortBy = event.currentTarget.dataset.sortBy;
-                    toggleSort(sortBy);
+                    if (typeof aValue === 'string' && typeof bValue === 'string') {
+                        return currentSortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+                    } else {
+                        return currentSortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+                    }
                 });
-            });
+            }
 
-            document.getElementById('prevPageBtn').addEventListener('click', () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderBorrowRecordsTable();
-                }
-            });
-
-            document.getElementById('nextPageBtn').addEventListener('click', () => {
-                const totalPages = Math.ceil(filteredAndSortedRecords.length / rowsPerPage);
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderBorrowRecordsTable();
-                }
-            });
-
-            document.getElementById('rowsPerPageSelect').addEventListener('change', (event) => {
-                rowsPerPage = parseInt(event.target.value);
-                currentPage = 1; // Reset to first page
-                renderBorrowRecordsTable();
-            });
-
-            document.getElementById('borrowRecordForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-                saveBorrowRecord();
-            });
+            filteredAndSortedDevices = tempDevices;
+            currentPage = 1; // Reset to first page after applying filters/sort
+            renderDevicesTable();
         }
 
         function toggleSort(column) {
@@ -821,7 +348,7 @@
                 currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
             } else {
                 currentSortColumn = column;
-                currentSortDirection = 'asc'; // Default to asc when changing column
+                currentSortDirection = 'asc'; // Default to ascending when changing column
             }
             updateSortIcons();
             applyFiltersAndSort();
@@ -829,214 +356,277 @@
 
         function updateSortIcons() {
             document.querySelectorAll('.sort-icon').forEach(icon => {
-                icon.innerHTML = ''; // Clear all icons
+                icon.textContent = ''; // Clear all icons
             });
-            const currentIcon = document.querySelector(`.sort-icon[data-sort-key="${currentSortColumn}"]`);
-            if (currentIcon) {
-                currentIcon.innerHTML = currentSortDirection === 'asc' ? ' &#9650;' : ' &#9660;'; // Up or Down arrow
+            if (currentSortColumn) {
+                const currentIcon = document.querySelector(`[data-sort-key="${currentSortColumn}"]`);
+                if (currentIcon) {
+                    currentIcon.textContent = currentSortDirection === 'asc' ? ' ▲' : ' ▼';
+                }
             }
         }
 
-        function updatePaginationControls() {
-            const totalRecords = filteredAndSortedRecords.length;
-            const totalPages = Math.ceil(totalRecords / rowsPerPage);
+        function renderDevicesTable() {
+            const devicesTableBody = document.getElementById('devicesTableBody');
+            const noDevicesMessage = document.getElementById('noDevicesMessage');
+            const paginationSummary = document.getElementById('paginationSummary');
+            const pageNumbersContainer = document.getElementById('pageNumbers');
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
 
-            document.getElementById('paginationSummary').textContent = 
-                `แสดง ${Math.min(totalRecords, (currentPage - 1) * rowsPerPage + 1)} - ${Math.min(totalRecords, currentPage * rowsPerPage)} จาก ${totalRecords} รายการ`;
+            devicesTableBody.innerHTML = ''; // Clear existing rows
+
+            if (!filteredAndSortedDevices || filteredAndSortedDevices.length === 0) {
+                noDevicesMessage.classList.remove('hidden');
+                paginationSummary.textContent = 'ไม่พบรายการ';
+                pageNumbersContainer.textContent = '';
+                prevPageBtn.disabled = true;
+                nextPageBtn.disabled = true;
+                return;
+            } else {
+                noDevicesMessage.classList.add('hidden');
+            }
+
+            // Calculate pagination values
+            const totalPages = Math.ceil(filteredAndSortedDevices.length / rowsPerPage);
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, filteredAndSortedDevices.length);
+            const devicesToDisplay = filteredAndSortedDevices.slice(startIndex, endIndex);
+
+            let tableRowsHtml = ''; 
+            devicesToDisplay.forEach(device => {
+                tableRowsHtml += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.deviceId}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.deviceName}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.serialNumber}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.type}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.model}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.status}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.condition}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">${device.notes || '-'}</td>
+                        <td class="py-3 px-6 border-b border-gray-200 text-sm">
+                            <button onclick="editDevice('${device.deviceId}')" class="text-blue-600 hover:text-blue-800 font-medium mr-2">แก้ไข</button>
+                            <button onclick="deleteDevice('${device.deviceId}')" class="text-red-600 hover:text-red-800 font-medium">ลบ</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            devicesTableBody.innerHTML = tableRowsHtml; // Set innerHTML once
+
+            // Update pagination summary
+            paginationSummary.textContent = `แสดง ${startIndex + 1}-${endIndex} จาก ${filteredAndSortedDevices.length} รายการ`;
+
+            // Update page numbers
+            pageNumbersContainer.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const pageSpan = document.createElement('span');
+                pageSpan.textContent = i;
+                pageSpan.classList.add('px-2', 'py-1', 'rounded-lg', 'cursor-pointer', 'text-sm');
+                if (i === currentPage) {
+                    pageSpan.classList.add('bg-blue-500', 'text-white');
+                } else {
+                    pageSpan.classList.add('hover:bg-gray-200');
+                }
+                pageSpan.addEventListener('click', () => goToPage(i));
+                pageNumbersContainer.appendChild(pageSpan);
+            }
+
+            // Enable/disable pagination buttons
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            renderDevicesTable();
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderDevicesTable();
+        }
+
+        function showAddDeviceForm() {
+            document.getElementById('deviceFormContainer').classList.remove('hidden');
+            document.getElementById('formTitle').textContent = 'เพิ่มอุปกรณ์ใหม่';
+            currentEditingDeviceId = null;
+            resetDeviceForm();
+            window.scrollTo(0, document.body.scrollHeight); // Scroll to the bottom
+        }
+
+        async function editDevice(deviceId) {
+            showStatus('info', `กำลังโหลดข้อมูลอุปกรณ์: ${deviceId}`);
             
-            document.getElementById('pageNumbers').textContent = `หน้า ${currentPage} จาก ${totalPages}`; 
+            const device = allDevices.find(d => d.deviceId === deviceId);
 
-            document.getElementById('prevPageBtn').disabled = currentPage === 1;
-            document.getElementById('nextPageBtn').disabled = currentPage === totalPages || totalPages === 0;
-        }
-
-        function showAddBorrowRecordForm() {
-            document.getElementById('borrowRecordForm').reset();
-            document.getElementById('formTitle').textContent = 'เพิ่มรายการยืม-คืนใหม่';
-            document.getElementById('recordId').value = '';
-            currentEditingRecordId = null;
-
-            // Enable all fields for new record
-            document.getElementById('deviceId').disabled = false;
-            document.getElementById('userId').disabled = false;
-            document.getElementById('borrowDate').disabled = false;
-            document.getElementById('dueDate').disabled = false;
-            document.getElementById('borrowStatus').disabled = false;
-            document.getElementById('borrowStatus').value = 'Pending'; // Default status for new records
-
-            // Hide return-specific fields
-            document.getElementById('returnConditionField').classList.add('hidden');
-            document.getElementById('returnNotesField').classList.add('hidden');
-
-            document.getElementById('borrowRecordFormContainer').classList.remove('hidden');
-            window.scrollTo({ top: document.getElementById('borrowRecordFormContainer').offsetTop - 20, behavior: 'smooth' });
-        }
-
-        async function editBorrowRecord(recordId) {
-            currentEditingRecordId = recordId;
-            document.getElementById('formTitle').textContent = 'แก้ไขรายการยืม-คืน';
-
-            const record = allBorrowRecords.find(r => r.recordId === recordId);
-            if (record) {
-                // Populate the form fields
-                document.getElementById('recordId').value = record.recordId;
-                document.getElementById('deviceId').value = record.deviceId;
-                document.getElementById('userId').value = record.userId;
-                document.getElementById('borrowDate').value = record.borrowDate;
-                document.getElementById('dueDate').value = record.dueDate;
-                document.getElementById('returnDate').value = record.returnDate || '';
-                document.getElementById('borrowStatus').value = record.borrowStatus;
-                document.getElementById('returnCondition').value = record.returnCondition || '';
-                document.getElementById('returnNotes').value = record.returnNotes || '';
-                document.getElementById('borrowerNotes').value = record.borrowerNotes || '';
-                document.getElementById('adminNotes').value = record.adminNotes || '';
-
-                // Show/hide return fields based on current status (if editing existing record)
-                const status = record.borrowStatus;
-                const returnDateDiv = document.getElementById('returnDate').parentNode;
-                const returnConditionField = document.getElementById('returnConditionField');
-                const returnNotesField = document.getElementById('returnNotesField');
-
-                if (status === 'Returned' || status === 'Lost by User') {
-                    returnDateDiv.classList.remove('hidden');
-                    document.getElementById('returnDate').required = true;
-                    returnConditionField.classList.remove('hidden');
-                    document.getElementById('returnCondition').required = true;
-                    returnNotesField.classList.remove('hidden');
-                } else {
-                    returnDateDiv.classList.add('hidden');
-                    document.getElementById('returnDate').required = false;
-                    returnConditionField.classList.add('hidden');
-                    document.getElementById('returnCondition').required = false;
-                    returnNotesField.classList.add('hidden');
-                }
-
-                // Set permissions for fields based on user status
-                const deviceIdSelect = document.getElementById('deviceId');
-                const userIdSelect = document.getElementById('userId');
-                const borrowDateInput = document.getElementById('borrowDate');
-                const dueDateInput = document.getElementById('dueDate');
-                const borrowStatusSelect = document.getElementById('borrowStatus');
-                const returnDateInput = document.getElementById('returnDate');
-                const returnConditionSelect = document.getElementById('returnCondition');
-                const returnNotesTextarea = document.getElementById('returnNotes');
-                const borrowerNotesTextarea = document.getElementById('borrowerNotes');
-                const adminNotesTextarea = document.getElementById('adminNotes');
-
-                if (currentUserStatus === 'ผู้ดูแลระบบ') {
-                    // Admin can edit all fields
-                    deviceIdSelect.disabled = false;
-                    userIdSelect.disabled = false;
-                    borrowDateInput.disabled = false;
-                    dueDateInput.disabled = false;
-                    borrowStatusSelect.disabled = false;
-                    returnDateInput.disabled = false;
-                    returnConditionSelect.disabled = false;
-                    returnNotesTextarea.disabled = false;
-                    borrowerNotesTextarea.disabled = false;
-                    adminNotesTextarea.disabled = false;
-
-                } else if (record.userId === currentUserId) {
-                    // Regular user editing their own record
-                    // Can only change status to 'Returned' or 'Lost by User' if currently 'Borrowed', 'Approved', 'Overdue' and not yet returned
-                    deviceIdSelect.disabled = true;
-                    userIdSelect.disabled = true;
-                    borrowDateInput.disabled = true;
-                    dueDateInput.disabled = true;
-                    borrowerNotesTextarea.disabled = false; // User can always edit their own notes
-                    adminNotesTextarea.disabled = true;
-
-                    if ((record.borrowStatus === 'Borrowed' || record.borrowStatus === 'Approved' || record.borrowStatus === 'Overdue') && !record.returnDate) {
-                        borrowStatusSelect.disabled = false;
-                        // Limit options in borrowStatus dropdown to 'Returned' and 'Lost by User'
-                        // Remove other options dynamically
-                        Array.from(borrowStatusSelect.options).forEach(option => {
-                            if (option.value !== 'Returned' && option.value !== 'Lost by User' && option.value !== '' && option.value !== record.borrowStatus) {
-                                option.style.display = 'none';
-                            }
-                        });
-                        // If current status is Pending, only allow setting to 'Rejected' (if any approval logic on client side before backend)
-                        // For now, simpler: only allow 'Returned'/'Lost' if borrowed/approved/overdue
-
-                        // Enable return date/condition/notes if applicable
-                        if (record.borrowStatus === 'Returned' || record.borrowStatus === 'Lost by User') {
-                            returnDateInput.disabled = false;
-                            returnConditionSelect.disabled = false;
-                            returnNotesTextarea.disabled = false;
-                        } else {
-                            returnDateInput.disabled = true;
-                            returnConditionSelect.disabled = true;
-                            returnNotesTextarea.disabled = true;
-                        }
-                    } else {
-                        // If not in a state where user can return/lose, disable status and return fields
-                        borrowStatusSelect.disabled = true;
-                        returnDateInput.disabled = true;
-                        returnConditionSelect.disabled = true;
-                        returnNotesTextarea.disabled = true;
-                    }
-
-                } else {
-                    // Not admin and not their own record (should ideally be redirected away by top-level check)
-                    // But as a safeguard, disable all fields
-                    deviceIdSelect.disabled = true;
-                    userIdSelect.disabled = true;
-                    borrowDateInput.disabled = true;
-                    dueDateInput.disabled = true;
-                    borrowStatusSelect.disabled = true;
-                    returnDateInput.disabled = true;
-                    returnConditionSelect.disabled = true;
-                    returnNotesTextarea.disabled = true;
-                    borrowerNotesTextarea.disabled = true;
-                    adminNotesTextarea.disabled = true;
-                }
-
-                document.getElementById('borrowRecordFormContainer').classList.remove('hidden');
-                document.getElementById('borrowRecordFormContainer').scrollIntoView({ behavior: 'smooth' });
+            if (device) {
+                currentEditingDeviceId = device.deviceId;
+                document.getElementById('formTitle').textContent = `แก้ไขอุปกรณ์: ${device.deviceName}`;
+                document.getElementById('deviceId').value = device.deviceId;
+                document.getElementById('deviceName').value = device.deviceName;
+                document.getElementById('serialNumber').value = device.serialNumber;
+                document.getElementById('type').value = device.type;
+                document.getElementById('model').value = device.model;
+                document.getElementById('status').value = device.status;
+                document.getElementById('condition').value = device.condition;
+                document.getElementById('notes').value = device.notes;
+                
+                document.getElementById('deviceFormContainer').classList.remove('hidden');
+                showStatus('success', 'โหลดข้อมูลอุปกรณ์สำเร็จ');
+                window.scrollTo(0, document.body.scrollHeight); // Scroll to the bottom
+            } else {
+                showStatus('error', 'ไม่พบข้อมูลอุปกรณ์ที่ต้องการแก้ไขในข้อมูลที่โหลดมา');
+                console.error('Device not found in fetched data:', deviceId);
             }
+        }
+
+        async function handleDeviceFormSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const deviceData = {};
+            for (let [key, value] of formData.entries()) {
+                deviceData[key] = value;
+            }
+
+            const saveBtn = document.getElementById('saveDeviceBtn');
+            const saveText = document.getElementById('saveDeviceText');
+            const saveSpinner = document.getElementById('saveDeviceSpinner');
+            
+            saveBtn.disabled = true;
+            saveText.textContent = 'กำลังบันทึก...';
+            saveSpinner.classList.remove('hidden');
+            showStatus('', ''); // Clear previous messages
+
+            try {
+                let action = 'createDevice';
+                let params = new URLSearchParams({
+                    action: action,
+                    deviceData: JSON.stringify(deviceData),
+                    token: token
+                });
+
+                if (currentEditingDeviceId) {
+                    action = 'updateDevice';
+                    params = new URLSearchParams({
+                        action: action,
+                        deviceId: currentEditingDeviceId,
+                        updatedData: JSON.stringify(deviceData),
+                        token: token
+                    });
+                }
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: params,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('success', result.message || (currentEditingDeviceId ? 'อัปเดตข้อมูลอุปกรณ์สำเร็จ!' : 'เพิ่มอุปกรณ์ใหม่สำเร็จ!'));
+                    resetDeviceForm();
+                    document.getElementById('deviceFormContainer').classList.add('hidden');
+                    fetchDevices(); // Re-fetch and re-render the list with filters/sort/pagination
+                } else {
+                    throw new Error(result.error || 'เกิดข้อผิดพลาดในการบันทึกข้อมูลอุปกรณ์');
+                }
+            } catch (error) {
+                console.error('Error saving device:', error);
+                showStatus('error', 'เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveText.textContent = currentEditingDeviceId ? 'บันทึกการเปลี่ยนแปลง' : 'บันทึกอุปกรณ์';
+                saveSpinner.classList.add('hidden');
+            }
+        }
+
+        function resetDeviceForm() {
+            document.getElementById('deviceForm').reset();
+            document.getElementById('deviceId').value = ''; // Clear hidden ID
+            currentEditingDeviceId = null;
+            document.getElementById('formTitle').textContent = 'เพิ่มอุปกรณ์ใหม่';
+        }
+
+        function cancelDeviceEdit() {
+            resetDeviceForm();
+            document.getElementById('deviceFormContainer').classList.add('hidden');
+        }
+
+        async function deleteDevice(deviceId) {
+            if (!confirm(`คุณแน่ใจหรือไม่ที่ต้องการลบอุปกรณ์ ID: ${deviceId}?`)) {
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams({
+                    action: 'deleteDevice',
+                    deviceId: deviceId,
+                    token: token
+                });
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: params,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('success', result.message || 'ลบอุปกรณ์สำเร็จแล้ว!');
+                    fetchDevices(); // Re-fetch and re-render the list with filters/sort/pagination
+                } else {
+                    showStatus('error', result.error || 'เกิดข้อผิดพลาดในการลบอุปกรณ์');
+                }
+            } catch (error) {
+                console.error('Error deleting device:', error);
+                showStatus('error', 'เกิดข้อผิดพลาดในการลบอุปกรณ์: ' + error.message);
+            }
+        }
+
+        function showStatus(type, message) {
+            const statusMessageDiv = document.getElementById('statusMessage');
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
+            
+            if (type === 'success') {
+                statusMessageDiv.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                statusMessageDiv.classList.add('bg-red-100', 'text-red-800');
+            } else if (type === 'info') {
+                statusMessageDiv.classList.add('bg-yellow-100', 'text-yellow-800');
+            }
+            statusMessageDiv.classList.remove('hidden');
+            statusMessageDiv.classList.add('fade-in');
+
+            setTimeout(() => {
+                statusMessageDiv.classList.add('hidden');
+            }, 5000);
         }
 
         function updateUIBasedOnPermissions() {
-            const addBorrowRecordButton = document.querySelector('button[onclick="showAddBorrowRecordForm()"]');
+            const addDeviceButton = document.querySelector('button[onclick="showAddDeviceForm()"]');
+            const manageBorrowRecordsLink = document.querySelector('a[href="borrow_record_management.html"]');
             const reportsLink = document.querySelector('a[href="reports.html"]');
             const actionHeader = document.querySelector('th.action-header');
 
-            const deviceIdSelect = document.getElementById('deviceId');
-            const userIdSelect = document.getElementById('userId');
-            const borrowStatusSelect = document.getElementById('borrowStatus');
-            const returnDateInput = document.getElementById('returnDate');
-            const returnConditionSelect = document.getElementById('returnCondition');
-            const returnNotesTextarea = document.getElementById('returnNotes');
-            const adminNotesTextarea = document.getElementById('adminNotes');
-
             if (currentUserStatus === 'ผู้ดูแลระบบ') {
-                addBorrowRecordButton.classList.remove('hidden');
+                addDeviceButton.classList.remove('hidden');
+                manageBorrowRecordsLink.classList.remove('hidden');
                 reportsLink.classList.remove('hidden');
                 if (actionHeader) actionHeader.classList.remove('hidden');
-
-                // Admin can edit all fields
-                deviceIdSelect.disabled = false;
-                userIdSelect.disabled = false;
-                borrowStatusSelect.disabled = false;
-                returnDateInput.disabled = false;
-                returnConditionSelect.disabled = false;
-                returnNotesTextarea.disabled = false;
-                adminNotesTextarea.disabled = false;
-
             } else {
-                addBorrowRecordButton.classList.add('hidden');
+                addDeviceButton.classList.add('hidden');
+                manageBorrowRecordsLink.classList.add('hidden');
                 reportsLink.classList.add('hidden');
                 if (actionHeader) actionHeader.classList.add('hidden');
-
-                // Regular users can only see some fields and change their own record status to 'Returned' or 'Lost by User'
-                // Disabling fields by default and re-enabling if certain conditions are met in edit mode
-                deviceIdSelect.disabled = true;
-                userIdSelect.disabled = true;
-                borrowStatusSelect.disabled = true; // Will be re-enabled conditionally in editBorrowRecord
-                returnDateInput.disabled = true;
-                returnConditionSelect.disabled = true;
-                returnNotesTextarea.disabled = true;
-                adminNotesTextarea.disabled = true;
             }
         }
     </script>
